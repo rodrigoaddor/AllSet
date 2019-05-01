@@ -17,11 +17,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with AfterLayoutMixin<HomePage>, SingleTickerProviderStateMixin<HomePage> {
   bool firstBuild = true;
   FirebaseUser currentUser;
-  double lastPercentage;
 
-  @override
-  void initState() {
-    super.initState();
+  void waitForQRAuth() async {
+    await Navigator.pushNamed(context, '/qr');
+    setState(() {});
   }
 
   @override
@@ -29,11 +28,11 @@ class _HomePageState extends State<HomePage> with AfterLayoutMixin<HomePage>, Si
     final FirebaseUser user = await auth.currentUser();
     setState(() => currentUser = user);
     if (user == null) {
-      Navigator.pushNamed(context, '/qr');
+      waitForQRAuth();
     } else {
       final DocumentSnapshot userData = await firestore.document('/users/${user.uid}').get();
       if (!userData.exists) {
-        Navigator.pushNamed(context, '/qr');
+        waitForQRAuth();
       }
     }
 

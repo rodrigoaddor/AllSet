@@ -47,6 +47,7 @@ class _QRPageState extends State<QRPage> with AfterLayoutMixin<QRPage> {
                             text: currentUser.uid,
                           ),
                         );
+                        print(currentUser.uid);
                         Scaffold.of(context).showSnackBar(
                           SnackBar(
                             content: Text('User ID copied to clipboard'),
