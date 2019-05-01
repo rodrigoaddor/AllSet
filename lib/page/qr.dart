@@ -53,9 +53,16 @@ class _QRPageState extends State<QRPage> with AfterLayoutMixin<QRPage> {
                           ),
                         );
                       },
-                      child: QrImage(
-                        data: currentUser.uid,
-                        backgroundColor: Colors.white70,
+                      child: Container(
+                        margin: EdgeInsets.all(32),
+                        padding: EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: QrImage(
+                          data: currentUser.uid,
+                        ),
                       ),
                     ),
             ),
