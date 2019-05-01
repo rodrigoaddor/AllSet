@@ -1,13 +1,21 @@
 name: AllSet
 description: AllSet App
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.2.2 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
+
+  firebase_core: ^0.3.4
+  firebase_auth: ^0.8.4+5
+  cloud_firestore: ^0.10.0
+
+  shared_preferences: ^0.5.2
+  after_layout: ^1.0.7
+  qr_flutter: ^2.0.0+51
 
   font_awesome_flutter: ^8.4.0
   percent_indicator: ^1.0.16
@@ -18,30 +26,3 @@ dependencies:
 
 flutter:
   uses-material-design: true
-
-  fonts:
-    - family: OpenSans
-      fonts:
-        - asset: assets/fonts/OpenSans-Regular.ttf
-        - asset: assets/fonts/OpenSans-Light.ttf
-          weight: 300
-        - asset: assets/fonts/OpenSans-LightItalic.ttf
-          weight: 300
-          style: italic
-        - asset: assets/fonts/OpenSans-Italic.ttf
-          style: italic
-        - asset: assets/fonts/OpenSans-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/OpenSans-SemiBoldItalic.ttf
-          weight: 600
-          style: italic
-        - asset: assets/fonts/OpenSans-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/OpenSans-BoldItalic.ttf
-          weight: 700
-          style: italic
-        - asset: assets/fonts/OpenSans-ExtraBold.ttf
-          weight: 800
-        - asset: assets/fonts/OpenSans-ExtraBoldItalic.ttf
-          weight: 800
-          style: italic
