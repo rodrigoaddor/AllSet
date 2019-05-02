@@ -1,5 +1,8 @@
-import 'package:AllSet/data/userData.dart';
+import 'dart:async';
+
 import 'package:after_layout/after_layout.dart';
+import 'package:allset/data/userData.dart';
+import 'package:allset/theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -15,89 +18,93 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with AfterLayoutMixin<HomePage>, SingleTickerProviderStateMixin<HomePage> {
-  bool firstBuild = true;
   FirebaseUser currentUser;
+  UserData userData;
 
-  void waitForQRAuth() async {
-    await Navigator.pushNamed(context, '/qr');
-    setState(() {});
-  }
+  Function(FirebaseUser) watchAuthState;
+  Function(DocumentSnapshot) watchDataState;
+
+  StreamSubscription<FirebaseUser> authStateSubscription;
+  StreamSubscription<DocumentSnapshot> watchDataSubscription;
 
   @override
   void afterFirstLayout(BuildContext context) async {
-    final FirebaseUser user = await auth.currentUser();
-    setState(() => currentUser = user);
-    if (user == null) {
-      waitForQRAuth();
-    } else {
-      final DocumentSnapshot userData = await firestore.document('/users/${user.uid}').get();
-      if (!userData.exists) {
-        waitForQRAuth();
+    watchAuthState = (user) async {
+      if (user == null) {
+        Navigator.pushNamed(context, '/qr');
+      } else {
+        watchDataSubscription?.cancel();
+        watchDataSubscription = firestore.collection('/users').document(user.uid).snapshots().listen(watchDataState);
+        setState(() => currentUser = user);
       }
-    }
+    };
 
-    this.firstBuild = false;
+    watchDataState = (snapshot) async {
+      if (!snapshot.exists) {
+        await Navigator.pushNamed(context, '/qr');
+      } else {
+        setState(() => userData = UserData.fromMap(snapshot.data));
+      }
+    };
+
+    auth.onAuthStateChanged.listen(watchAuthState);
+  }
+
+  @override
+  void dispose() {
+    authStateSubscription?.cancel();
+    watchDataSubscription?.cancel();
+
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[900],
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'AllSet',
-          style: TextStyle(color: Colors.white),
+    return Theme(
+      data: buildHomeTheme(),
+      child: Scaffold(
+        appBar: AppBar(
+          elevation: 0,
+          centerTitle: true,
+          title: Text(
+            'AllSet',
+          ),
         ),
+        body: Center(
+          child: this.currentUser == null || this.userData == null
+              ? CircularProgressIndicator()
+              : CircularPercentIndicator(
+              percent: this.userData.percent,
+              center: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                  if (this.userData.charging) ...[
+          Padding(
+          padding: EdgeInsets.only(top: 8, left: 10),
+          child: Icon(
+            FontAwesomeIcons.bolt,
+            size: 190,
+            color: Color.fromRGBO(255, 255, 255, 0.06),
+          ),
+        ),
+        ],
+      Text(
+      this.userData.hPercent,
+      style: TextStyle(
+        fontSize: 36,
       ),
-      body: Center(
-        child: this.currentUser == null
-            ? CircularProgressIndicator()
-            : StreamBuilder<DocumentSnapshot>(
-                stream: firestore.document('/users/${this.currentUser.uid}').snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData || !snapshot.data.exists) {
-                    return CircularProgressIndicator();
-                  } else {
-                    final userData = UserData.fromMap(snapshot.data.data);
-
-                    return CircularPercentIndicator(
-                      percent: userData.percent,
-                      center: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          if (userData.charging) ...[
-                            Padding(
-                              padding: EdgeInsets.only(top: 8, left: 10),
-                              child: Icon(
-                                FontAwesomeIcons.bolt,
-                                size: 190,
-                                color: Color.fromRGBO(255, 255, 255, 0.06),
-                              ),
-                            ),
-                          ],
-                          Text(
-                            userData.hPercent,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 36,
-                            ),
-                          ),
-                        ],
-                      ),
-                      backgroundColor: Color.fromRGBO(255, 255, 255, 0.06),
-                      circularStrokeCap: CircularStrokeCap.round,
-                      radius: 300,
-                      lineWidth: 16,
-                      animation: true,
-                      animationDuration: 300,
-                      animateFromLastPercent: true,
-                    );
-                  }
-                },
-              ),
+    ),
+    ],
+    ),
+    backgroundColor: Color.fromRGBO(255, 255, 255, 0.06),
+    circularStrokeCap: CircularStrokeCap.round,
+    radius: 300,
+    lineWidth: 16,
+    animation: true,
+    animationDuration: 300,
+    animateFromLastPercent: true,
+    ),
+    ),
       ),
     );
   }

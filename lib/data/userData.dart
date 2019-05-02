@@ -10,8 +10,8 @@ class UserData {
 
   factory UserData.fromMap(Map<String, dynamic> map) {
     return UserData(
-      charging: map['charging'],
-      percent: map['percent'].toDouble()
+        charging: map['charging'] ?? false,
+        percent: map['percent']?.toDouble() ?? 0.0
     );
   }
 }
