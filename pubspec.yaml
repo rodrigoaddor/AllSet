@@ -1,6 +1,6 @@
 name: allset
 description: AllSet App
-version: 1.0.3+4
+version: 1.0.4+5
 
 environment:
   sdk: ">=2.2.2 <3.0.0"

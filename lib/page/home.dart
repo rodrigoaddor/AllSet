@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:after_layout/after_layout.dart';
 import 'package:allset/data/userData.dart';
+import 'package:allset/page/payment.dart';
 import 'package:allset/theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -37,6 +38,7 @@ class _HomePageState extends State<HomePage> with AfterLayoutMixin<HomePage>, Si
         watchDataSubscription = firestore.collection('/users').document(user.uid).snapshots().listen(watchDataState);
         setState(() => currentUser = user);
       }
+      print(user.uid);
     };
 
     watchDataState = (snapshot) async {
@@ -58,6 +60,15 @@ class _HomePageState extends State<HomePage> with AfterLayoutMixin<HomePage>, Si
     super.dispose();
   }
 
+  void updatePayment() async {
+    final payment = await Navigator.pushNamed(context, '/payment') as PaymentResponse;
+    print(payment.toJson());
+
+    firestore.collection('users').document(currentUser.uid).updateData({
+      'payment': payment.toJson()
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Theme(
@@ -69,42 +80,50 @@ class _HomePageState extends State<HomePage> with AfterLayoutMixin<HomePage>, Si
           title: Text(
             'AllSet',
           ),
+          actions: [
+            IconButton(
+              onPressed: updatePayment,
+              tooltip: 'Payment',
+              icon: Icon(FontAwesomeIcons.dollarSign),
+            ),
+          ],
         ),
         body: Center(
-          child: this.currentUser == null || this.userData == null
+          child: currentUser == null || userData == null
               ? CircularProgressIndicator()
               : CircularPercentIndicator(
-              percent: this.userData.percent,
-              center: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                  if (this.userData.charging) ...[
-          Padding(
-          padding: EdgeInsets.only(top: 8, left: 10),
-          child: Icon(
-            FontAwesomeIcons.bolt,
-            size: 190,
-            color: Color.fromRGBO(255, 255, 255, 0.06),
-          ),
+                  percent: userData.percent,
+                  progressColor: Color.lerp(Colors.red[900], Colors.green[900], userData.percent),
+                  backgroundColor: Color.fromRGBO(255, 255, 255, 0.06),
+                  circularStrokeCap: CircularStrokeCap.round,
+                  radius: 300,
+                  lineWidth: 16,
+                  animation: true,
+                  animationDuration: 300,
+                  animateFromLastPercent: true,
+                  center: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      if (this.userData.charging) ...[
+                        Padding(
+                          padding: EdgeInsets.only(top: 8, left: 10),
+                          child: Icon(
+                            FontAwesomeIcons.bolt,
+                            size: 190,
+                            color: Color.fromRGBO(255, 255, 255, 0.06),
+                          ),
+                        ),
+                      ],
+                      Text(
+                        this.userData.hPercent,
+                        style: TextStyle(
+                          fontSize: 36,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
         ),
-        ],
-      Text(
-      this.userData.hPercent,
-      style: TextStyle(
-        fontSize: 36,
-      ),
-    ),
-    ],
-    ),
-    backgroundColor: Color.fromRGBO(255, 255, 255, 0.06),
-    circularStrokeCap: CircularStrokeCap.round,
-    radius: 300,
-    lineWidth: 16,
-    animation: true,
-    animationDuration: 300,
-    animateFromLastPercent: true,
-    ),
-    ),
       ),
     );
   }

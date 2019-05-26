@@ -21,3 +21,11 @@ ThemeData buildQRTheme() =>
     ThemeData.dark().copyWith(
       scaffoldBackgroundColor: Colors.grey[900],
     );
+
+ThemeData buildPaymentTheme() =>
+    ThemeData.dark().copyWith(
+      scaffoldBackgroundColor: Colors.grey[900],
+      dividerColor: Colors.red[900],
+      accentColor: Colors.redAccent[700],
+      hintColor: Colors.red[700],
+    );
