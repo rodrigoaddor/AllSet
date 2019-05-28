@@ -18,7 +18,8 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with AfterLayoutMixin<HomePage>, SingleTickerProviderStateMixin<HomePage> {
+class _HomePageState extends State<HomePage>
+    with AfterLayoutMixin<HomePage>, SingleTickerProviderStateMixin<HomePage> {
   FirebaseUser currentUser;
   UserData userData;
 
@@ -31,25 +32,31 @@ class _HomePageState extends State<HomePage> with AfterLayoutMixin<HomePage>, Si
   @override
   void afterFirstLayout(BuildContext context) async {
     watchAuthState = (user) async {
+      this.setState(() => currentUser = user);
       if (user == null) {
-        Navigator.pushNamed(context, '/qr');
+        watchDataSubscription?.cancel();
+        authStateSubscription?.cancel();
+        await Navigator.pushNamed(context, '/qr');
+        authStateSubscription = auth.onAuthStateChanged.listen(watchAuthState);
       } else {
         watchDataSubscription?.cancel();
-        watchDataSubscription = firestore.collection('/users').document(user.uid).snapshots().listen(watchDataState);
-        setState(() => currentUser = user);
+        watchDataSubscription = firestore
+            .collection('/users')
+            .document(user.uid)
+            .snapshots()
+            .listen(watchDataState);
       }
-      print(user.uid);
     };
 
     watchDataState = (snapshot) async {
-      if (!snapshot.exists) {
-        await Navigator.pushNamed(context, '/qr');
-      } else {
+      if (snapshot.exists) {
         setState(() => userData = UserData.fromMap(snapshot.data));
+      } else if (currentUser != null) {
+        Navigator.pushNamed(context, '/qr');
       }
     };
 
-    auth.onAuthStateChanged.listen(watchAuthState);
+    authStateSubscription = auth.onAuthStateChanged.listen(watchAuthState);
   }
 
   @override
@@ -61,12 +68,13 @@ class _HomePageState extends State<HomePage> with AfterLayoutMixin<HomePage>, Si
   }
 
   void updatePayment() async {
-    final payment = await Navigator.pushNamed(context, '/payment') as PaymentResponse;
-    print(payment.toJson());
+    final payment =
+        await Navigator.pushNamed(context, '/payment') as PaymentResponse;
 
-    firestore.collection('users').document(currentUser.uid).updateData({
-      'payment': payment.toJson()
-    });
+    firestore
+        .collection('users')
+        .document(currentUser.uid)
+        .updateData({'payment': payment.toJson()});
   }
 
   @override
@@ -93,7 +101,8 @@ class _HomePageState extends State<HomePage> with AfterLayoutMixin<HomePage>, Si
               ? CircularProgressIndicator()
               : CircularPercentIndicator(
                   percent: userData.percent,
-                  progressColor: Color.lerp(Colors.red[900], Colors.green[900], userData.percent),
+                  progressColor: Color.lerp(
+                      Colors.red[900], Colors.green[900], userData.percent),
                   backgroundColor: Color.fromRGBO(255, 255, 255, 0.06),
                   circularStrokeCap: CircularStrokeCap.round,
                   radius: 300,
