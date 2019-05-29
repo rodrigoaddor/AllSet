@@ -1,28 +1,16 @@
+import 'package:after_layout/after_layout.dart';
+import 'package:allset/data/payment_data.dart';
 import 'package:allset/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
-enum PaymentType { PRICE, CHARGE }
-
-class PaymentResponse {
-  final PaymentType type;
-  final double value;
-
-  const PaymentResponse(this.type, this.value);
-
-  Map<String, dynamic> toJson() => {
-        'type': type.toString().split('.').last.toLowerCase(),
-        'value': value,
-      };
-}
 
 class PaymentPage extends StatefulWidget {
   @override
   _PaymentPageState createState() => _PaymentPageState();
 }
 
-class _PaymentPageState extends State<PaymentPage> {
+class _PaymentPageState extends State<PaymentPage> with AfterLayoutMixin {
   final priceController = TextEditingController();
   final chargeController = TextEditingController();
 
@@ -47,12 +35,31 @@ class _PaymentPageState extends State<PaymentPage> {
     super.dispose();
   }
 
+  @override
+  void afterFirstLayout(BuildContext context) {
+    final PaymentData initialPaymentData =
+        ModalRoute
+            .of(context)
+            .settings
+            .arguments;
+    if (initialPaymentData != null) {
+      switch (initialPaymentData.type) {
+        case PaymentType.PRICE:
+          priceController.text = initialPaymentData.value.toStringAsFixed(2);
+          break;
+        case PaymentType.CHARGE:
+          chargeController.text = initialPaymentData.value.toStringAsFixed(0);
+          break;
+      }
+    }
+  }
+
   String validateCharge(String input) {
     try {
-      if (input.length == 0) return '';
+      if (input.length == 0) return null;
       final value = double.parse(input);
       if (value == 0 || value > 100) return 'Carga deve estar entre 0% e 100%';
-      return '';
+      return null;
     } on FormatException {
       return 'Número inválido';
     }
@@ -60,10 +67,10 @@ class _PaymentPageState extends State<PaymentPage> {
 
   String validatePrice(String input) {
     try {
-      if (input.length == 0) return '';
+      if (input.length == 0) return null;
       final value = double.parse(input);
       if (value <= 0) return 'Preço deve ser maior que 0';
-      return '';
+      return null;
     } on FormatException {
       return 'Número inválido';
     }
@@ -86,7 +93,7 @@ class _PaymentPageState extends State<PaymentPage> {
       return;
     }
 
-    Navigator.pop(context, PaymentResponse(paymentType, value));
+    Navigator.pop(context, PaymentData(paymentType, value));
   }
 
   @override
@@ -98,21 +105,22 @@ class _PaymentPageState extends State<PaymentPage> {
           title: const Text('Pagamento'),
           leading: Builder(
             builder: (context) => WillPopScope(
-                  onWillPop: () {
-                    goBack(context);
-                  },
-                  child: IconButton(
-                    icon: Icon(FontAwesomeIcons.arrowLeft),
-                    onPressed: () => goBack(context),
-                  ),
-                ),
+              onWillPop: () {
+                goBack(context);
+              },
+              child: IconButton(
+                icon: Icon(FontAwesomeIcons.arrowLeft),
+                onPressed: () => goBack(context),
+              ),
+            ),
           ),
         ),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 128),
+              padding:
+              const EdgeInsets.symmetric(vertical: 16, horizontal: 128),
               child: TextFormField(
                 controller: priceController,
                 focusNode: priceFocus,
@@ -145,7 +153,8 @@ class _PaymentPageState extends State<PaymentPage> {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 128),
+              padding:
+              const EdgeInsets.symmetric(vertical: 16, horizontal: 128),
               child: TextFormField(
                 controller: chargeController,
                 focusNode: chargeFocus,

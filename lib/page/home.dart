@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:after_layout/after_layout.dart';
-import 'package:allset/data/userData.dart';
-import 'package:allset/page/payment.dart';
+import 'package:allset/data/payment_data.dart';
+import 'package:allset/data/user_data.dart';
 import 'package:allset/theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -50,7 +50,7 @@ class _HomePageState extends State<HomePage>
 
     watchDataState = (snapshot) async {
       if (snapshot.exists) {
-        setState(() => userData = UserData.fromMap(snapshot.data));
+        setState(() => userData = UserData.fromJson(snapshot.data));
       } else if (currentUser != null) {
         Navigator.pushNamed(context, '/qr');
       }
@@ -68,8 +68,8 @@ class _HomePageState extends State<HomePage>
   }
 
   void updatePayment() async {
-    final payment =
-        await Navigator.pushNamed(context, '/payment') as PaymentResponse;
+    final payment = await Navigator.pushNamed(context, '/payment',
+        arguments: userData.payment ?? null) as PaymentData;
 
     firestore
         .collection('users')
