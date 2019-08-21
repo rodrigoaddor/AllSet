@@ -105,8 +105,9 @@ class _PaymentPageState extends State<PaymentPage> with AfterLayoutMixin {
           title: const Text('Pagamento'),
           leading: Builder(
             builder: (context) => WillPopScope(
-              onWillPop: () {
+              onWillPop: () async {
                 goBack(context);
+                return false;
               },
               child: IconButton(
                 icon: Icon(FontAwesomeIcons.arrowLeft),
