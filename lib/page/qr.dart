@@ -4,12 +4,14 @@ import 'package:after_layout/after_layout.dart';
 import 'package:allset/theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 final FirebaseAuth auth = FirebaseAuth.instance;
 final Firestore firestore = Firestore.instance;
+final FirebaseMessaging firebaseMsg = FirebaseMessaging();
 
 class QRPage extends StatefulWidget {
   @override
@@ -28,6 +30,9 @@ class _QRPageState extends State<QRPage> with AfterLayoutMixin<QRPage> {
     await for (final snapshot in firestoreStream) {
       if (snapshot.exists) {
         Navigator.pop(context, newUser);
+        firestore.document('/users/${this.currentUser.uid}').setData({
+          'token': await firebaseMsg.getToken()
+        });
         return;
       }
     }
