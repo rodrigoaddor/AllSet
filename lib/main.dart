@@ -1,10 +1,12 @@
 import 'package:allset/router.dart';
 import 'package:allset/theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
-final FirebaseMessaging firebaseMsg = FirebaseMessaging();
+final FirebaseAuth auth = FirebaseAuth.instance;
+final FirebaseMessaging msg = FirebaseMessaging();
 
 void main() async {
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -14,19 +16,22 @@ void main() async {
     ),
   );
 
-  firebaseMsg.requestNotificationPermissions();
-  firebaseMsg.configure(onMessage: (Map<String, dynamic> message) async {
+  msg.requestNotificationPermissions();
+  msg.configure(onMessage: (Map<String, dynamic> message) async {
     print('onMessage $message');
   });
 
-  runApp(MyApp());
+  final bool hasUser = await auth.currentUser() != null;
+
+  runApp(AllsetApp(initialRoute: hasUser ? '/' : 'register'));
 }
 
-class MyApp extends StatelessWidget {
+class AllsetApp extends StatelessWidget {
+  final String initialRoute;
+
+  AllsetApp({this.initialRoute = '/'});
+
   @override
-  Widget build(BuildContext context) => MaterialApp(
-        title: 'AllSet App',
-    theme: buildTheme(),
-        routes: router,
-      );
+  Widget build(BuildContext context) =>
+      MaterialApp(title: 'AllSet App', theme: buildTheme(), routes: router, initialRoute: this.initialRoute);
 }

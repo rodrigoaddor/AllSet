@@ -5,8 +5,7 @@ String paymentTypeToString(PaymentType type) {
 }
 
 PaymentType paymentTypeFromString(String type) {
-  return PaymentType.values.firstWhere(
-      (enumType) => enumType.toString().split('.').last.toLowerCase() == type);
+  return PaymentType.values.firstWhere((enumType) => enumType.toString().split('.').last.toLowerCase() == type);
 }
 
 class PaymentData {

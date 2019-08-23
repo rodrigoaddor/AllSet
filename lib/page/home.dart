@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
-Firestore firestore = Firestore.instance;
+Firestore db = Firestore.instance;
 FirebaseAuth auth = FirebaseAuth.instance;
 
 class HomePage extends StatefulWidget {
@@ -18,41 +18,22 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>
-    with AfterLayoutMixin<HomePage>, SingleTickerProviderStateMixin<HomePage> {
-  FirebaseUser currentUser;
-  UserData userData;
-
+class _HomePageState extends State<HomePage> with AfterLayoutMixin<HomePage>, SingleTickerProviderStateMixin<HomePage> {
   Function(FirebaseUser) watchAuthState;
-  Function(DocumentSnapshot) watchDataState;
-
   StreamSubscription<FirebaseUser> authStateSubscription;
-  StreamSubscription<DocumentSnapshot> watchDataSubscription;
+  FirebaseUser currentUser;
+
+  AnimationController fadeController;
+  Animation fadeAnimation;
 
   @override
   void afterFirstLayout(BuildContext context) async {
     watchAuthState = (user) async {
       this.setState(() => currentUser = user);
       if (user == null) {
-        watchDataSubscription?.cancel();
         authStateSubscription?.cancel();
-        await Navigator.pushNamed(context, '/qr');
+        await Navigator.pushNamed(context, '/register');
         authStateSubscription = auth.onAuthStateChanged.listen(watchAuthState);
-      } else {
-        watchDataSubscription?.cancel();
-        watchDataSubscription = firestore
-            .collection('/users')
-            .document(user.uid)
-            .snapshots()
-            .listen(watchDataState);
-      }
-    };
-
-    watchDataState = (snapshot) async {
-      if (snapshot.exists) {
-        setState(() => userData = UserData.fromJson(snapshot.data));
-      } else if (currentUser != null) {
-        Navigator.pushNamed(context, '/qr');
       }
     };
 
@@ -60,79 +41,119 @@ class _HomePageState extends State<HomePage>
   }
 
   @override
+  void initState() {
+    super.initState();
+    fadeController = AnimationController(vsync: this, duration: Duration(seconds: 3));
+    fadeAnimation = Tween(begin: 0.2, end: 0.7).chain(CurveTween(curve: Curves.easeInOut)).animate(fadeController);
+    fadeController.repeat(reverse: true);
+  }
+
+  @override
   void dispose() {
     authStateSubscription?.cancel();
-    watchDataSubscription?.cancel();
-
     super.dispose();
   }
 
-  void updatePayment() async {
-    final payment = await Navigator.pushNamed(context, '/payment',
-        arguments: userData.payment ?? null) as PaymentData;
+  void updatePayment(UserData userData) async {
+    final payment = await Navigator.pushNamed(context, '/payment', arguments: userData.payment ?? null) as PaymentData;
 
-    firestore
-        .collection('users')
-        .document(currentUser.uid)
-        .updateData({'payment': payment.toJson()});
+    db.collection('users').document(currentUser.uid).updateData({'payment': payment.toJson()});
+  }
+
+  Widget buildChargeIndicator(UserData userData) {
+    return CircularPercentIndicator(
+      percent: userData.percent,
+      progressColor: Color.lerp(Colors.red[900], Colors.green[900], userData.percent),
+      backgroundColor: Color.fromRGBO(255, 255, 255, 0.06),
+      circularStrokeCap: CircularStrokeCap.round,
+      radius: 300,
+      lineWidth: 16,
+      animation: true,
+      animationDuration: 300,
+      animateFromLastPercent: true,
+      center: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (userData.charging) ...[
+            Padding(
+              padding: EdgeInsets.only(top: 8, left: 10),
+              child: Icon(
+                FontAwesomeIcons.bolt,
+                size: 190,
+                color: Color.fromRGBO(255, 255, 255, 0.06),
+              ),
+            ),
+          ],
+          Text(
+            userData.hPercent,
+            style: TextStyle(
+              fontSize: 36,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildIdle() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'No vehicle found!',
+          style: TextStyle(fontSize: 30),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 24),
+          child: FadeTransition(
+            opacity: fadeAnimation,
+            child: Icon(
+              FontAwesomeIcons.chargingStation,
+              size: 150,
+              color: Colors.grey[800],
+            ),
+          ),
+        ),
+        Text(
+          'Plug in your vehicle to start using Allset.',
+          style: TextStyle(fontSize: 16),
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Theme(
       data: buildHomeTheme(),
-      child: Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          centerTitle: true,
-          title: Text(
-            'AllSet',
-          ),
-          actions: [
-            IconButton(
-              onPressed: updatePayment,
-              tooltip: 'Payment',
-              icon: Icon(FontAwesomeIcons.dollarSign),
-            ),
-          ],
-        ),
-        body: Center(
-          child: currentUser == null || userData == null
-              ? CircularProgressIndicator()
-              : CircularPercentIndicator(
-                  percent: userData.percent,
-                  progressColor: Color.lerp(
-                      Colors.red[900], Colors.green[900], userData.percent),
-                  backgroundColor: Color.fromRGBO(255, 255, 255, 0.06),
-                  circularStrokeCap: CircularStrokeCap.round,
-                  radius: 300,
-                  lineWidth: 16,
-                  animation: true,
-                  animationDuration: 300,
-                  animateFromLastPercent: true,
-                  center: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      if (this.userData.charging) ...[
-                        Padding(
-                          padding: EdgeInsets.only(top: 8, left: 10),
-                          child: Icon(
-                            FontAwesomeIcons.bolt,
-                            size: 190,
-                            color: Color.fromRGBO(255, 255, 255, 0.06),
-                          ),
-                        ),
-                      ],
-                      Text(
-                        this.userData.hPercent,
-                        style: TextStyle(
-                          fontSize: 36,
-                        ),
-                      ),
-                    ],
-                  ),
+      child: StreamBuilder<DocumentSnapshot>(
+        stream: this.currentUser != null
+            ? db.collection('/users').document(this.currentUser.uid).snapshots()
+            : Stream.empty(),
+        builder: (context, snapshot) {
+          UserData userData = UserData.fromJson(snapshot.data?.data ?? {});
+          return Scaffold(
+            appBar: AppBar(
+              elevation: 0,
+              centerTitle: true,
+              title: Text(
+                'AllSet',
+              ),
+              actions: [
+                IconButton(
+                  onPressed: !snapshot.hasData ? null : () => updatePayment(userData),
+                  tooltip: 'Payment',
+                  icon: Icon(FontAwesomeIcons.dollarSign),
                 ),
-        ),
+              ],
+            ),
+            body: Center(
+              child: !snapshot.hasData
+                  ? CircularProgressIndicator()
+                  : userData.hasVehicle ? buildChargeIndicator(userData) : buildIdle(),
+            ),
+          );
+        },
       ),
     );
   }

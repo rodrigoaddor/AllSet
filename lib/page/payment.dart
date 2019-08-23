@@ -3,6 +3,7 @@ import 'package:allset/data/payment_data.dart';
 import 'package:allset/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class PaymentPage extends StatefulWidget {
@@ -11,7 +12,7 @@ class PaymentPage extends StatefulWidget {
 }
 
 class _PaymentPageState extends State<PaymentPage> with AfterLayoutMixin {
-  final priceController = TextEditingController();
+  final priceController = MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
   final chargeController = TextEditingController();
 
   final priceFocus = FocusNode();
@@ -22,7 +23,7 @@ class _PaymentPageState extends State<PaymentPage> with AfterLayoutMixin {
     super.initState();
 
     priceFocus.addListener(() => {chargeController.clear()});
-    chargeFocus.addListener(() => {priceController.clear()});
+    chargeFocus.addListener(() => {priceController.updateValue(0)});
   }
 
   @override
@@ -37,11 +38,7 @@ class _PaymentPageState extends State<PaymentPage> with AfterLayoutMixin {
 
   @override
   void afterFirstLayout(BuildContext context) {
-    final PaymentData initialPaymentData =
-        ModalRoute
-            .of(context)
-            .settings
-            .arguments;
+    final PaymentData initialPaymentData = ModalRoute.of(context).settings.arguments;
     if (initialPaymentData != null) {
       switch (initialPaymentData.type) {
         case PaymentType.PRICE:
@@ -65,23 +62,18 @@ class _PaymentPageState extends State<PaymentPage> with AfterLayoutMixin {
     }
   }
 
-  String validatePrice(String input) {
-    try {
-      if (input.length == 0) return null;
-      final value = double.parse(input);
-      if (value <= 0) return 'Preço deve ser maior que 0';
-      return null;
-    } on FormatException {
-      return 'Número inválido';
-    }
+  String validatePrice(_) {
+    final value = priceController.numberValue;
+    if (value <= 0) return 'Preço deve ser maior que 0';
+    return null;
   }
 
   void goBack(BuildContext context) {
     PaymentType paymentType;
     double value;
-    if (priceController.text.length > 0) {
+    if (priceController.numberValue > 0) {
       paymentType = PaymentType.PRICE;
-      value = double.parse(priceController.text);
+      value = priceController.numberValue;
     } else if (chargeController.text.length > 0) {
       paymentType = PaymentType.CHARGE;
       value = double.parse(chargeController.text);
@@ -120,8 +112,7 @@ class _PaymentPageState extends State<PaymentPage> with AfterLayoutMixin {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Padding(
-              padding:
-              const EdgeInsets.symmetric(vertical: 16, horizontal: 128),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 128),
               child: TextFormField(
                 controller: priceController,
                 focusNode: priceFocus,
@@ -154,8 +145,7 @@ class _PaymentPageState extends State<PaymentPage> with AfterLayoutMixin {
               ],
             ),
             Padding(
-              padding:
-              const EdgeInsets.symmetric(vertical: 16, horizontal: 128),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 128),
               child: TextFormField(
                 controller: chargeController,
                 focusNode: chargeFocus,
