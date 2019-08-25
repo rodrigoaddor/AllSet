@@ -4,14 +4,13 @@ import 'package:allset/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class PaymentPage extends StatefulWidget {
+class PaymentDialog extends StatefulWidget {
   @override
-  _PaymentPageState createState() => _PaymentPageState();
+  _PaymentDialogState createState() => _PaymentDialogState();
 }
 
-class _PaymentPageState extends State<PaymentPage> with AfterLayoutMixin {
+class _PaymentDialogState extends State<PaymentDialog> with AfterLayoutMixin {
   final priceController = MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
   final chargeController = TextEditingController();
 
@@ -92,78 +91,67 @@ class _PaymentPageState extends State<PaymentPage> with AfterLayoutMixin {
   Widget build(BuildContext context) {
     return Theme(
       data: buildPaymentTheme(),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Pagamento'),
-          leading: Builder(
-            builder: (context) => WillPopScope(
-              onWillPop: () async {
-                goBack(context);
-                return false;
-              },
-              child: IconButton(
-                icon: Icon(FontAwesomeIcons.arrowLeft),
-                onPressed: () => goBack(context),
+      child: SimpleDialog(
+        title: Text('Payment'),
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 64),
+            child: TextFormField(
+              controller: priceController,
+              focusNode: priceFocus,
+              keyboardType: TextInputType.number,
+              validator: validatePrice,
+              autovalidate: true,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                isDense: true,
+                labelText: 'Preço',
+                prefix: const Text('R\$ '),
               ),
             ),
           ),
-        ),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 128),
-              child: TextFormField(
-                controller: priceController,
-                focusNode: priceFocus,
-                keyboardType: TextInputType.number,
-                validator: validatePrice,
-                autovalidate: true,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                  labelText: 'Preço',
-                  prefix: const Text('R\$ '),
+          Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(left: 48, right: 24),
+                  child: Divider(),
                 ),
               ),
-            ),
-            Row(
-              children: const [
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 48, right: 24),
-                    child: Divider(),
-                  ),
-                ),
-                Text('OU'),
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 24, right: 48),
-                    child: Divider(),
-                  ),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 128),
-              child: TextFormField(
-                controller: chargeController,
-                focusNode: chargeFocus,
-                keyboardType: TextInputType.number,
-                inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
-                validator: validateCharge,
-                autovalidate: true,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                  labelText: 'Carga',
-                  suffix: const Text(' %'),
-                  errorMaxLines: 2,
+              Text('OR'),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(left: 24, right: 48),
+                  child: Divider(),
                 ),
               ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 64),
+            child: TextFormField(
+              controller: chargeController,
+              focusNode: chargeFocus,
+              keyboardType: TextInputType.number,
+              inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
+              validator: validateCharge,
+              autovalidate: true,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                isDense: true,
+                labelText: 'Carga',
+                suffix: const Text(' %'),
+                errorMaxLines: 2,
+              ),
             ),
-          ],
-        ),
+          ),
+          SimpleDialogOption(
+            child: Text('Confirm'),
+          ),
+          SimpleDialogOption(
+            child: Text('Cancel'),
+          ),
+        ],
       ),
     );
   }

@@ -1,10 +1,7 @@
-import 'dart:async';
-
-import 'package:after_layout/after_layout.dart';
-import 'package:allset/data/payment_data.dart';
 import 'package:allset/page/charging.dart';
 import 'package:allset/theme.dart';
 import 'package:allset/utils/page_item.dart';
+import 'package:allset/widget/payment.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -18,27 +15,9 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with AfterLayoutMixin<HomePage>, SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   TabController tabController;
   int currentIndex = 1;
-
-  Function(FirebaseUser) watchAuthState;
-  StreamSubscription<FirebaseUser> authStateSubscription;
-  FirebaseUser currentUser;
-
-  @override
-  void afterFirstLayout(BuildContext context) async {
-    watchAuthState = (user) async {
-      this.setState(() => currentUser = user);
-      if (user == null) {
-        authStateSubscription?.cancel();
-        await Navigator.pushNamed(context, '/register');
-        authStateSubscription = auth.onAuthStateChanged.listen(watchAuthState);
-      }
-    };
-
-    authStateSubscription = auth.onAuthStateChanged.listen(watchAuthState);
-  }
 
   @override
   void initState() {
@@ -52,13 +31,8 @@ class _HomePageState extends State<HomePage> with AfterLayoutMixin<HomePage>, Si
 
   @override
   void dispose() {
-    authStateSubscription?.cancel();
+    tabController.dispose();
     super.dispose();
-  }
-
-  void updatePayment() async {
-    final payment = await Navigator.pushNamed(context, '/payment') as PaymentData;
-    db.collection('users').document(currentUser.uid).updateData({'payment': payment.toJson()});
   }
 
   final pages = <PageItem>[
@@ -87,7 +61,9 @@ class _HomePageState extends State<HomePage> with AfterLayoutMixin<HomePage>, Si
           ),
           actions: [
             IconButton(
-              onPressed: updatePayment,
+              onPressed: () {
+                showDialog(context: context, builder: (context) => PaymentDialog());
+              },
               tooltip: 'Payment',
               icon: Icon(FontAwesomeIcons.dollarSign),
             ),
