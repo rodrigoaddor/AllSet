@@ -1,4 +1,5 @@
 import 'package:allset/page/charging.dart';
+import 'package:allset/page/stations.dart';
 import 'package:allset/theme.dart';
 import 'package:allset/utils/page_item.dart';
 import 'package:allset/widget/payment.dart';
@@ -17,7 +18,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   TabController tabController;
-  int currentIndex = 1;
+  int currentIndex = 0;
 
   @override
   void initState() {
@@ -39,7 +40,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     PageItem(
       name: 'Stations',
       icon: FontAwesomeIcons.chargingStation,
-      page: Container(color: Colors.blue),
+      page: StationsPage(),
     ),
     PageItem(
       name: 'Your Car',
