@@ -1,13 +1,14 @@
 import 'package:allset/data/user_data.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
+Firestore db = Firestore.instance;
+FirebaseAuth auth = FirebaseAuth.instance;
+
 class ChargingPage extends StatefulWidget {
-  final UserData userData;
-
-  ChargingPage(this.userData);
-
   @override
   _ChargingPageState createState() => _ChargingPageState();
 }
@@ -51,10 +52,10 @@ class _ChargingPageState extends State<ChargingPage> with SingleTickerProviderSt
     );
   }
 
-  Widget buildChargeIndicator() {
+  Widget buildChargeIndicator(UserData userData) {
     return CircularPercentIndicator(
-      percent: widget.userData.percent,
-      progressColor: Color.lerp(Colors.red[900], Colors.green[900], widget.userData.percent),
+      percent: userData.percent,
+      progressColor: Color.lerp(Colors.red[900], Colors.green[900], userData.percent),
       backgroundColor: Color.fromRGBO(255, 255, 255, 0.06),
       circularStrokeCap: CircularStrokeCap.round,
       radius: 300,
@@ -65,7 +66,7 @@ class _ChargingPageState extends State<ChargingPage> with SingleTickerProviderSt
       center: Stack(
         alignment: Alignment.center,
         children: [
-          if (widget.userData.charging) ...[
+          if (userData.charging) ...[
             Padding(
               padding: EdgeInsets.only(top: 8, left: 10),
               child: Icon(
@@ -76,7 +77,7 @@ class _ChargingPageState extends State<ChargingPage> with SingleTickerProviderSt
             ),
           ],
           Text(
-            widget.userData.hPercent,
+            userData.hPercent,
             style: TextStyle(
               fontSize: 36,
             ),
@@ -88,6 +89,20 @@ class _ChargingPageState extends State<ChargingPage> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    return widget.userData.hasVehicle ? buildChargeIndicator() : buildIdle();
+    return Center(
+      child: FutureBuilder<FirebaseUser>(
+        future: auth.currentUser(),
+        builder: (context, snapshot) {
+          return !snapshot.hasData ? CircularProgressIndicator() : StreamBuilder<DocumentSnapshot>(
+            stream: db.document('/users/${snapshot.data.uid}').snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return CircularProgressIndicator();
+              final userData = UserData.fromJson(snapshot.data.data);
+              return userData.hasVehicle ? buildChargeIndicator(userData) : buildIdle();
+            },
+          );
+        },
+      ),
+    );
   }
 }
