@@ -30,6 +30,12 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+def apiKeys = new Properties()
+def apiKeysFile = rootProject.file('api.properties')
+if (apiKeysFile.exists()) {
+    apiKeys.load(new FileInputStream(apiKeysFile))
+}
+
 android {
     compileSdkVersion 28
 
@@ -45,7 +51,7 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        manifestPlaceholders = [mapsApi: keystoreProperties['mapsApi']]
+        manifestPlaceholders = [mapsApi: apiKeys['mapsApi']]
     }
 
     signingConfigs {
