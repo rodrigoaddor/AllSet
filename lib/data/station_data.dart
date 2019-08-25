@@ -4,12 +4,19 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 LatLng latLngFromGeoPoint(GeoPoint geoPoint) => LatLng(geoPoint.latitude, geoPoint.longitude);
 
 class StationData {
+  final String id;
   final String name;
   final LatLng position;
+  final bool hasVehicle;
 
-  const StationData({this.name, this.position});
+  const StationData({this.id, this.name, this.position, this.hasVehicle});
 
   factory StationData.fromJSON(Map<String, dynamic> json) {
-    return StationData(name: json['name'], position: latLngFromGeoPoint(json['position']));
+    return StationData(
+      id: json['id'],
+      name: json['name'],
+      position: latLngFromGeoPoint(json['position']),
+      hasVehicle: json['hasVehicle'],
+    );
   }
 }

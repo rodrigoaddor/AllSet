@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:allset/data/station_data.dart';
+import 'package:allset/widget/station.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
 
 final Firestore db = Firestore.instance;
-final location = Location();
 
 class StationsPage extends StatefulWidget {
   @override
@@ -21,11 +21,15 @@ class _StationsPageState extends State<StationsPage> {
   @override
   void initState() {
     super.initState();
-    location.requestPermission();
+    Geolocator().checkGeolocationPermissionStatus();
 
     db.collection('/stations').getDocuments().then(
       (documents) {
-        final List<StationData> stations = documents.documents.map((doc) => StationData.fromJSON(doc.data)).toList();
+        final List<StationData> stations = documents.documents.map((doc) {
+          doc.data['id'] = doc.documentID;
+          return StationData.fromJSON(doc.data);
+        }).toList();
+
         setState(() {
           this.stations.addAll(stations);
         });
@@ -43,6 +47,7 @@ class _StationsPageState extends State<StationsPage> {
           .map((station) => Marker(
                 markerId: MarkerId(station.name),
                 position: station.position,
+                onTap: () => showDialog(context: context, builder: (context) => StationDialog(station)),
               ))
           .toSet(),
       initialCameraPosition: CameraPosition(
