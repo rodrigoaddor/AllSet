@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:allset/data/station_data.dart';
+import 'package:allset/data/user_data.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -20,19 +21,32 @@ class StationDialog extends StatefulWidget {
 }
 
 class _StationDialogState extends State<StationDialog> {
-  Future reserveFuture = Future.value();
+  Future reserveTask = Future.value();
 
-  void reserveStation() async {
+  void reserveStation(StationData station) async {
     final String uid = (await auth.currentUser()).uid;
+    final userRef = db.document('/users/$uid');
+    final stationRef = db.document('/stations/${station.id}');
+    final Completer task = Completer();
     setState(() {
-      reserveFuture = db.document('/stations/${widget.station.id}').updateData({'reserved': db.document  ('/users/$uid')});
+      reserveTask = task.future;
     });
+    await userRef.updateData({'reserved': stationRef});
+    await stationRef.updateData({'reserved': userRef});
+    task.complete();
   }
 
-  void unReserveStation() async {
+  void unReserveStation(StationData station) async {
+    final String uid = (await auth.currentUser()).uid;
+    final userRef = db.document('/users/$uid');
+    final stationRef = db.document('/stations/${station.id}');
+    final Completer task = Completer();
     setState(() {
-      reserveFuture = db.document('/stations/${widget.station.id}').updateData({'reserved': FieldValue.delete()});
+      reserveTask = task.future;
     });
+    await stationRef.updateData({'reserved': FieldValue.delete()});
+    await userRef.updateData({'reserved': FieldValue.delete()});
+    task.complete();
   }
 
   @override
@@ -149,28 +163,36 @@ class _StationDialogState extends State<StationDialog> {
                     child: ButtonBar(children: [
                       FutureBuilder(
                         future: Future.wait([
-                          reserveFuture,
+                          reserveTask,
                           auth.currentUser(),
                         ]),
                         builder: (context, snapshot) {
-                          print(snapshot.data);
-                          final userId = snapshot.connectionState == ConnectionState.done
+                          final userId = snapshot.connectionState == ConnectionState.done && snapshot.hasData
                               ? (snapshot.data[1] as FirebaseUser).uid
                               : '';
                           final reservedByUser = station.reserved != null && station.reserved.documentID == userId;
-                          return RaisedButton(
-                            onPressed: station.hasVehicle || (station.reserved != null && !reservedByUser)
-                                ? null
-                                : reservedByUser ? this.unReserveStation : this.reserveStation,
-                            child: snapshot.connectionState == ConnectionState.done
-                                ? Text(reservedByUser ? 'Cancel Reservation' : 'Reserve')
-                                : SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                    ),
-                                  ),
+                          return StreamBuilder<DocumentSnapshot>(
+                            stream: userId.length > 0 ? db.document('/users/$userId').snapshots() : Stream.empty(),
+                            builder: (context, userSnapshot) {
+                              final userData = UserData.fromJson(userSnapshot.hasData ? userSnapshot.data.data : {});
+                              final userHasReservation = userData.reserved != null;
+                              return RaisedButton(
+                                onPressed: (userHasReservation && !reservedByUser) || station.hasVehicle || (station.reserved != null && !reservedByUser)
+                                    ? null
+                                    : reservedByUser
+                                        ? () => this.unReserveStation(station)
+                                        : () => this.reserveStation(station),
+                                child: snapshot.connectionState == ConnectionState.done
+                                    ? Text(reservedByUser ? 'Cancel Reservation' : 'Reserve')
+                                    : SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        ),
+                                      ),
+                              );
+                            }
                           );
                         },
                       ),

@@ -39,6 +39,7 @@ class _StationsPageState extends State<StationsPage> {
             myLocationEnabled: true,
             mapToolbarEnabled: false,
             onMapCreated: (newController) => mapCompleter.complete(newController),
+            onLongPress: (latLng) => print(latLng),
             markers: stations
                 .map((station) => Marker(
                       markerId: MarkerId(station.name),
