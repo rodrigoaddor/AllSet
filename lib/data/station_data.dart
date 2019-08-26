@@ -8,8 +8,9 @@ class StationData {
   final String name;
   final LatLng position;
   final bool hasVehicle;
+  final DocumentReference reserved;
 
-  const StationData({this.id, this.name, this.position, this.hasVehicle});
+  const StationData({this.id, this.name, this.position, this.hasVehicle, this.reserved});
 
   factory StationData.fromJSON(Map<String, dynamic> json) {
     return StationData(
@@ -17,6 +18,7 @@ class StationData {
       name: json['name'],
       position: latLngFromGeoPoint(json['position']),
       hasVehicle: json['hasVehicle'],
+      reserved: json['reserved'],
     );
   }
 }
