@@ -115,7 +115,7 @@ class _StationDialogState extends State<StationDialog> {
                         ),
                       ),
                       SizedBox(
-                        height: 40,
+                        height: 36,
                         child: Align(
                           alignment: Alignment.bottomLeft,
                           child: FutureBuilder<Placemark>(
@@ -143,12 +143,14 @@ class _StationDialogState extends State<StationDialog> {
                         builder: (context, snapshot) {
                           return SizedBox(
                             height: 28,
-                            child: snapshot.hasData &&
-                                    station.reserved != null &&
-                                    snapshot.data.uid == station.reserved.documentID
+                            child: station.reserved != null
                                 ? Align(
                                     alignment: Alignment.bottomLeft,
-                                    child: Text('You reserved this station.'),
+                                    child: Text(
+                                      snapshot.hasData && station.reserved.documentID == snapshot.data.uid
+                                          ? 'You reserved this station.'
+                                          : 'This station is already reserved.',
+                                    ),
                                   )
                                 : null,
                           );
@@ -172,28 +174,29 @@ class _StationDialogState extends State<StationDialog> {
                               : '';
                           final reservedByUser = station.reserved != null && station.reserved.documentID == userId;
                           return StreamBuilder<DocumentSnapshot>(
-                            stream: userId.length > 0 ? db.document('/users/$userId').snapshots() : Stream.empty(),
-                            builder: (context, userSnapshot) {
-                              final userData = UserData.fromJson(userSnapshot.hasData ? userSnapshot.data.data : {});
-                              final userHasReservation = userData.reserved != null;
-                              return RaisedButton(
-                                onPressed: (userHasReservation && !reservedByUser) || station.hasVehicle || (station.reserved != null && !reservedByUser)
-                                    ? null
-                                    : reservedByUser
-                                        ? () => this.unReserveStation(station)
-                                        : () => this.reserveStation(station),
-                                child: snapshot.connectionState == ConnectionState.done
-                                    ? Text(reservedByUser ? 'Cancel Reservation' : 'Reserve')
-                                    : SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              stream: userId.length > 0 ? db.document('/users/$userId').snapshots() : Stream.empty(),
+                              builder: (context, userSnapshot) {
+                                final userData = UserData.fromJson(userSnapshot.hasData ? userSnapshot.data.data : {});
+                                final userHasReservation = userData.reserved != null;
+                                return RaisedButton(
+                                  onPressed: (userHasReservation && !reservedByUser) ||
+                                          station.hasVehicle ||
+                                          (station.reserved != null && !reservedByUser)
+                                      ? null
+                                      : reservedByUser
+                                          ? () => this.unReserveStation(station)
+                                          : () => this.reserveStation(station),
+                                  child: snapshot.connectionState == ConnectionState.done
+                                      ? Text(reservedByUser ? 'Cancel Reservation' : 'Reserve')
+                                      : SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                          ),
                                         ),
-                                      ),
-                              );
-                            }
-                          );
+                                );
+                              });
                         },
                       ),
                       RaisedButton(
