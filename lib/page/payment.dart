@@ -1,8 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:allset/data/payment_data.dart';
+
+final FirebaseAuth auth = FirebaseAuth.instance;
+final Firestore db = Firestore.instance;
 
 class PaymentPage extends StatefulWidget {
   @override
@@ -11,20 +18,23 @@ class PaymentPage extends StatefulWidget {
 
 class _PaymentPageState extends State<PaymentPage> {
   final priceController = MoneyMaskedTextController(decimalSeparator: '.', thousandSeparator: ',');
-  final emptyController = TextEditingController();
   final chargeController = TextEditingController();
 
   final priceFocus = FocusNode();
   final chargeFocus = FocusNode();
 
+  Future saveTask = Future.value();
+
   @override
   void initState() {
     super.initState();
 
-    priceFocus.addListener(() => chargeController.clear());
+    priceFocus.addListener(() {
+      chargeController.clear();
+    });
+
     chargeFocus.addListener(() {
       priceController.updateValue(0);
-      emptyController.clear();
     });
   }
 
@@ -55,6 +65,27 @@ class _PaymentPageState extends State<PaymentPage> {
     return null;
   }
 
+  void saveValue() async {
+    final task = new Completer();
+    setState(() {
+      this.saveTask = task.future;
+    });
+
+    final paymentType = priceController.numberValue > 0 ? PaymentType.PRICE : PaymentType.CHARGE;
+
+    final paymentData = PaymentData(
+      paymentType,
+      paymentType == PaymentType.PRICE ? priceController.numberValue : double.tryParse(chargeController.text) ?? -1,
+    );
+
+    await db.document('/users/${(await auth.currentUser()).uid}').setData(
+      {'payment': paymentData.toJson()},
+      merge: true,
+    );
+
+    task.complete();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -63,7 +94,7 @@ class _PaymentPageState extends State<PaymentPage> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 64),
           child: TextFormField(
-            controller: priceFocus.hasPrimaryFocus ? priceController : emptyController,
+            controller: priceController,
             focusNode: priceFocus,
             keyboardType: TextInputType.number,
             validator: priceFocus.hasPrimaryFocus ? validatePrice : (_) => null,
@@ -111,7 +142,21 @@ class _PaymentPageState extends State<PaymentPage> {
             ),
           ),
         ),
-        RaisedButton(onPressed: () {}, child: Text('Salvar'))
+        RaisedButton(
+          onPressed: saveValue,
+          child: FutureBuilder(
+            future: this.saveTask,
+            builder: (context, snapshot) => snapshot.connectionState == ConnectionState.done
+                ? Text('Salvar')
+                : SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  ),
+          ),
+        )
       ],
     );
   }

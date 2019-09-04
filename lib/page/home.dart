@@ -3,7 +3,6 @@ import 'package:allset/page/payment.dart';
 import 'package:allset/page/stations.dart';
 import 'package:allset/theme.dart';
 import 'package:allset/utils/page_item.dart';
-import 'package:allset/widget/payment.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -39,20 +38,16 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   final pages = <PageItem>[
     PageItem(
-      name: 'Stations',
+      name: 'Estações',
       icon: FontAwesomeIcons.chargingStation,
       page: StationsPage(),
     ),
     PageItem(
-      name: 'Your Car',
+      name: 'Seu Carro',
       icon: FontAwesomeIcons.car,
       page: ChargingPage(),
     ),
-    PageItem(
-      name: 'Pagamento',
-      icon: FontAwesomeIcons.dollarSign,
-      page: PaymentPage()
-    )
+    PageItem(name: 'Pagamento', icon: FontAwesomeIcons.dollarSign, page: PaymentPage())
   ];
 
   @override
@@ -66,19 +61,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           title: Text(
             'AllSet',
           ),
-          actions: [
-            AnimatedOpacity(
-              opacity: this.currentIndex == 1 ? 1 : 0,
-              duration: Duration(milliseconds: 300),
-              child: IconButton(
-                onPressed: this.currentIndex == 1 ? () {
-                  showDialog(context: context, builder: (context) => PaymentDialog());
-                } : null,
-                tooltip: 'Pagamento',
-                icon: Icon(FontAwesomeIcons.dollarSign),
-              ),
-            ),
-          ],
         ),
         body: TabBarView(
           controller: tabController,
