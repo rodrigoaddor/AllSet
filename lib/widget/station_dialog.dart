@@ -51,168 +51,176 @@ class _StationDialogState extends State<StationDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: db.document('/stations/${widget.station.id}').snapshots(),
-      builder: (context, snapshot) {
-        final StationData station = snapshot.hasData
-            ? StationData.fromJSON(snapshot.data.data..addAll({'id': snapshot.data.documentID}))
-            : widget.station;
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 140, horizontal: 64),
-          child: Card(
-            clipBehavior: Clip.antiAliasWithSaveLayer,
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  height: 200,
-                  child: GoogleMap(
-                    mapToolbarEnabled: false,
-                    initialCameraPosition: CameraPosition(target: station.position, zoom: 9),
-                    rotateGesturesEnabled: false,
-                    scrollGesturesEnabled: false,
-                    zoomGesturesEnabled: false,
-                    tiltGesturesEnabled: false,
-                    markers: Set.of([
-                      Marker(
-                        markerId: MarkerId('station'),
-                        position: station.position,
-                      )
-                    ]),
-                    onMapCreated: (controller) async {
-                      await Future.delayed(Duration(seconds: 2));
-                      try {
-                        await controller.animateCamera(CameraUpdate.zoomTo(15));
-                      } catch (e) {} // Doesn't need to be handled, just ignored.
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 16, right: 24),
+    return FutureBuilder<FirebaseUser>(
+        future: auth.currentUser(),
+        builder: (context, snapshot) {
+          final userId = snapshot.hasData ? snapshot.data.uid : '';
+          return StreamBuilder<DocumentSnapshot>(
+            stream: db.document('/stations/${widget.station.id}').snapshots(),
+            builder: (context, snapshot) {
+              final StationData station = snapshot.hasData
+                  ? StationData.fromJSON(snapshot.data.data..addAll({'id': snapshot.data.documentID}))
+                  : widget.station;
+
+              final userReserved = station.reserved != null && station.reserved.documentID == userId;
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 120, horizontal: 32),
+                child: Card(
+                  clipBehavior: Clip.antiAliasWithSaveLayer,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
                       SizedBox(
-                        height: 44,
                         width: double.infinity,
-                        child: Align(
-                          alignment: Alignment.bottomLeft,
-                          child: Text(
-                            station.name,
-                            style: Theme.of(context).textTheme.headline,
-                          ),
+                        height: 200,
+                        child: GoogleMap(
+                          mapToolbarEnabled: false,
+                          initialCameraPosition: CameraPosition(target: station.position, zoom: 9),
+                          rotateGesturesEnabled: false,
+                          scrollGesturesEnabled: false,
+                          zoomGesturesEnabled: false,
+                          tiltGesturesEnabled: false,
+                          markers: Set.of([
+                            Marker(
+                                markerId: MarkerId('station'),
+                                position: station.position,
+                                icon: userReserved
+                                    ? BitmapDescriptor.defaultMarkerWithHue(300)
+                                    : BitmapDescriptor.defaultMarker)
+                          ]),
+                          onMapCreated: (controller) async {
+                            await Future.delayed(Duration(seconds: 2));
+                            try {
+                              await controller.animateCamera(CameraUpdate.zoomTo(15));
+                            } catch (e) {} // Doesn't need to be handled, just ignored.
+                          },
                         ),
                       ),
-                      SizedBox(
-                        height: 32,
-                        child: Align(
-                          alignment: Alignment.bottomLeft,
-                          child: Text(
-                            'Address',
-                            style: Theme.of(context).textTheme.body2,
-                          ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16, right: 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            SizedBox(
+                              height: 44,
+                              width: double.infinity,
+                              child: Align(
+                                alignment: Alignment.bottomLeft,
+                                child: Text(
+                                  station.name,
+                                  style: Theme.of(context).textTheme.headline,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 32,
+                              child: Align(
+                                alignment: Alignment.bottomLeft,
+                                child: Text(
+                                  'Address',
+                                  style: Theme.of(context).textTheme.body2,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 36,
+                              child: Align(
+                                alignment: Alignment.bottomLeft,
+                                child: FutureBuilder<Placemark>(
+                                  future: Geolocator()
+                                      .placemarkFromPosition(Position(
+                                        latitude: station.position.latitude,
+                                        longitude: station.position.longitude,
+                                      ))
+                                      .then((list) => list[0]),
+                                  builder: (context, snapshot) {
+                                    if (!snapshot.hasData) return LinearProgressIndicator();
+                                    final place = snapshot.data;
+                                    final address =
+                                        '${place.thoroughfare}, Nº ${place.subThoroughfare}, ${place.subLocality}';
+                                    return Text(
+                                      address,
+                                      style: Theme.of(context).textTheme.body1,
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 28,
+                              child: station.reserved != null
+                                  ? Align(
+                                      alignment: Alignment.bottomLeft,
+                                      child: Text(
+                                        snapshot.hasData && station.reserved.documentID == userId
+                                            ? 'Você reservou essa estação.'
+                                            : 'Essa estação já está reservada.',
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(
-                        height: 36,
+                      Expanded(
                         child: Align(
-                          alignment: Alignment.bottomLeft,
-                          child: FutureBuilder<Placemark>(
-                            future: Geolocator()
-                                .placemarkFromPosition(Position(
-                                  latitude: station.position.latitude,
-                                  longitude: station.position.longitude,
-                                ))
-                                .then((list) => list[0]),
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData) return LinearProgressIndicator();
-                              final place = snapshot.data;
-                              final address =
-                                  '${place.thoroughfare}, Nº ${place.subThoroughfare}, ${place.subLocality}';
-                              return Text(
-                                address,
-                                style: Theme.of(context).textTheme.body1,
-                              );
-                            },
-                          ),
+                          alignment: Alignment.bottomCenter,
+                          child: ButtonBar(children: [
+                            FutureBuilder(
+                              future: Future.wait([
+                                reserveTask,
+                                auth.currentUser(),
+                              ]),
+                              builder: (context, snapshot) {
+                                final userId = snapshot.connectionState == ConnectionState.done && snapshot.hasData
+                                    ? (snapshot.data[1] as FirebaseUser).uid
+                                    : '';
+                                final reservedByUser =
+                                    station.reserved != null && station.reserved.documentID == userId;
+                                return StreamBuilder<DocumentSnapshot>(
+                                    stream:
+                                        userId.length > 0 ? db.document('/users/$userId').snapshots() : Stream.empty(),
+                                    builder: (context, userSnapshot) {
+                                      final userData =
+                                          UserData.fromJson(userSnapshot.hasData ? userSnapshot.data.data : {});
+                                      final userHasReservation = userData.reserved != null;
+                                      return RaisedButton(
+                                        onPressed: (userHasReservation && !reservedByUser) ||
+                                                station.hasVehicle ||
+                                                (station.reserved != null && !reservedByUser)
+                                            ? null
+                                            : reservedByUser
+                                                ? () => this.unReserveStation(station)
+                                                : () => this.reserveStation(station),
+                                        child: snapshot.connectionState == ConnectionState.done
+                                            ? Text(reservedByUser ? 'Cancelar Reserva' : 'Reservar')
+                                            : SizedBox(
+                                                width: 20,
+                                                height: 20,
+                                                child: CircularProgressIndicator(
+                                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                                ),
+                                              ),
+                                      );
+                                    });
+                              },
+                            ),
+                            RaisedButton(
+                              child: Text('Fechar'),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ]),
                         ),
-                      ),
-                      FutureBuilder<FirebaseUser>(
-                        future: auth.currentUser(),
-                        builder: (context, snapshot) {
-                          return SizedBox(
-                            height: 28,
-                            child: station.reserved != null
-                                ? Align(
-                                    alignment: Alignment.bottomLeft,
-                                    child: Text(
-                                      snapshot.hasData && station.reserved.documentID == snapshot.data.uid
-                                          ? 'You reserved this station.'
-                                          : 'This station is already reserved.',
-                                    ),
-                                  )
-                                : null,
-                          );
-                        },
-                      ),
+                      )
                     ],
                   ),
                 ),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: ButtonBar(children: [
-                      FutureBuilder(
-                        future: Future.wait([
-                          reserveTask,
-                          auth.currentUser(),
-                        ]),
-                        builder: (context, snapshot) {
-                          final userId = snapshot.connectionState == ConnectionState.done && snapshot.hasData
-                              ? (snapshot.data[1] as FirebaseUser).uid
-                              : '';
-                          final reservedByUser = station.reserved != null && station.reserved.documentID == userId;
-                          return StreamBuilder<DocumentSnapshot>(
-                              stream: userId.length > 0 ? db.document('/users/$userId').snapshots() : Stream.empty(),
-                              builder: (context, userSnapshot) {
-                                final userData = UserData.fromJson(userSnapshot.hasData ? userSnapshot.data.data : {});
-                                final userHasReservation = userData.reserved != null;
-                                return RaisedButton(
-                                  onPressed: (userHasReservation && !reservedByUser) ||
-                                          station.hasVehicle ||
-                                          (station.reserved != null && !reservedByUser)
-                                      ? null
-                                      : reservedByUser
-                                          ? () => this.unReserveStation(station)
-                                          : () => this.reserveStation(station),
-                                  child: snapshot.connectionState == ConnectionState.done
-                                      ? Text(reservedByUser ? 'Cancel Reservation' : 'Reserve')
-                                      : SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
-                                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                          ),
-                                        ),
-                                );
-                              });
-                        },
-                      ),
-                      RaisedButton(
-                        child: Text('Close'),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ]),
-                  ),
-                )
-              ],
-            ),
-          ),
-        );
-      },
-    );
+              );
+            },
+          );
+        });
   }
 }

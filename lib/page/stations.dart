@@ -46,15 +46,19 @@ class _StationsPageState extends State<StationsPage> {
               mapToolbarEnabled: false,
               onMapCreated: (newController) => mapCompleter.complete(newController),
               onLongPress: (latLng) => print(latLng),
-              markers: stations
-                  .map((station) => Marker(
-                        markerId: MarkerId(station.name),
-                        position: station.position,
-                        onTap: () => showDialog(context: context, builder: (context) => StationDialog(station)),
-                        alpha: station.reserved == null || station.reserved.documentID == userId ? 1 : 0.3,
-                        consumeTapEvents: true,
-                      ))
-                  .toSet(),
+              markers: stations.map((station) {
+                final userReserved = station.reserved != null && station.reserved.documentID == userId;
+                return Marker(
+                  icon: userReserved
+                      ? BitmapDescriptor.defaultMarkerWithHue(300)
+                      : BitmapDescriptor.defaultMarker,
+                  markerId: MarkerId(station.name),
+                  position: station.position,
+                  onTap: () => showDialog(context: context, builder: (context) => StationDialog(station)),
+                  alpha: station.reserved == null || userReserved ? 1 : 0.5,
+                  consumeTapEvents: true,
+                );
+              }).toSet(),
               initialCameraPosition: CameraPosition(
                 target: LatLng(-22.2563022, -45.7034431),
                 zoom: 14.4746,
