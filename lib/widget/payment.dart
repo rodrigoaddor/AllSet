@@ -118,7 +118,7 @@ class _PaymentDialogState extends State<PaymentDialog> with AfterLayoutMixin {
                   child: Divider(),
                 ),
               ),
-              Text('OR'),
+              Text('OU'),
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(left: 24, right: 48),
@@ -146,10 +146,10 @@ class _PaymentDialogState extends State<PaymentDialog> with AfterLayoutMixin {
             ),
           ),
           SimpleDialogOption(
-            child: Text('Confirm'),
+            child: Text('Confirmar'),
           ),
           SimpleDialogOption(
-            child: Text('Cancel'),
+            child: Text('Cancelar'),
           ),
         ],
       ),

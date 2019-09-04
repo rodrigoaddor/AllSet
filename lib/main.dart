@@ -31,5 +31,10 @@ void main() async {
 
 class AllsetApp extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => MaterialApp(title: 'AllSet App', theme: buildTheme(), routes: router);
+  Widget build(BuildContext context) => MaterialApp(
+        title: 'AllSet App',
+        theme: buildTheme(),
+        routes: router,
+        debugShowCheckedModeBanner: false,
+      );
 }

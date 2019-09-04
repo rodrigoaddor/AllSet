@@ -25,6 +25,12 @@ class _ChargingPageState extends State<ChargingPage> with SingleTickerProviderSt
     fadeController.repeat(reverse: true);
   }
 
+  @override
+  void dispose() {
+    fadeController.dispose();
+    super.dispose();
+  }
+
   Widget buildIdle() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -55,8 +61,8 @@ class _ChargingPageState extends State<ChargingPage> with SingleTickerProviderSt
   Widget buildChargeIndicator(UserData userData) {
     return CircularPercentIndicator(
       percent: userData.percent,
-      progressColor: Color.lerp(Colors.red[900], Colors.green[900], userData.percent),
-      backgroundColor: Color.fromRGBO(255, 255, 255, 0.06),
+      progressColor: Colors.red[400],
+      backgroundColor: Color.fromRGBO(0, 0, 0, 0.1),
       circularStrokeCap: CircularStrokeCap.round,
       radius: 300,
       lineWidth: 16,
@@ -72,7 +78,7 @@ class _ChargingPageState extends State<ChargingPage> with SingleTickerProviderSt
               child: Icon(
                 FontAwesomeIcons.bolt,
                 size: 190,
-                color: Color.fromRGBO(255, 255, 255, 0.06),
+                color: Color.fromRGBO(0, 0, 0, 0.1),
               ),
             ),
           ],

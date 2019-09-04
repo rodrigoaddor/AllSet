@@ -7,8 +7,8 @@ ThemeData buildTheme() => ThemeData.dark().copyWith(
       ),
     );
 
-ThemeData buildHomeTheme() => ThemeData.dark().copyWith(
-      scaffoldBackgroundColor: Colors.grey[900],
+ThemeData buildHomeTheme() => ThemeData.light().copyWith(
+      scaffoldBackgroundColor: Colors.white,
       accentColor: Colors.blue,
       primaryColor: Colors.grey[900],
       primaryTextTheme: TextTheme(

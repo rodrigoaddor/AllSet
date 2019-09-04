@@ -1,4 +1,5 @@
 import 'package:allset/page/charging.dart';
+import 'package:allset/page/payment.dart';
 import 'package:allset/page/stations.dart';
 import 'package:allset/theme.dart';
 import 'package:allset/utils/page_item.dart';
@@ -25,7 +26,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     super.initState();
     tabController = TabController(
       initialIndex: this.currentIndex,
-      length: 2,
+      length: 3,
       vsync: this,
     );
   }
@@ -47,6 +48,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       icon: FontAwesomeIcons.car,
       page: ChargingPage(),
     ),
+    PageItem(
+      name: 'Pagamento',
+      icon: FontAwesomeIcons.dollarSign,
+      page: PaymentPage()
+    )
   ];
 
   @override
@@ -61,12 +67,16 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             'AllSet',
           ),
           actions: [
-            IconButton(
-              onPressed: () {
-                showDialog(context: context, builder: (context) => PaymentDialog());
-              },
-              tooltip: 'Payment',
-              icon: Icon(FontAwesomeIcons.dollarSign),
+            AnimatedOpacity(
+              opacity: this.currentIndex == 1 ? 1 : 0,
+              duration: Duration(milliseconds: 300),
+              child: IconButton(
+                onPressed: this.currentIndex == 1 ? () {
+                  showDialog(context: context, builder: (context) => PaymentDialog());
+                } : null,
+                tooltip: 'Pagamento',
+                icon: Icon(FontAwesomeIcons.dollarSign),
+              ),
             ),
           ],
         ),
