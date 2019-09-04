@@ -167,43 +167,33 @@ class _StationDialogState extends State<StationDialog> {
                         child: Align(
                           alignment: Alignment.bottomCenter,
                           child: ButtonBar(children: [
-                            FutureBuilder(
-                              future: Future.wait([
-                                reserveTask,
-                                auth.currentUser(),
-                              ]),
-                              builder: (context, snapshot) {
-                                final userId = snapshot.connectionState == ConnectionState.done && snapshot.hasData
-                                    ? (snapshot.data[1] as FirebaseUser).uid
-                                    : '';
+                            StreamBuilder<DocumentSnapshot>(
+                              stream: userId.length > 0 ? db.document('/users/$userId').snapshots() : Stream.empty(),
+                              builder: (context, userSnapshot) {
+                                final userData = UserData.fromJson(userSnapshot.hasData ? userSnapshot.data.data : {});
+                                final userHasReservation = userData.reserved != null;
                                 final reservedByUser =
                                     station.reserved != null && station.reserved.documentID == userId;
-                                return StreamBuilder<DocumentSnapshot>(
-                                    stream:
-                                        userId.length > 0 ? db.document('/users/$userId').snapshots() : Stream.empty(),
-                                    builder: (context, userSnapshot) {
-                                      final userData =
-                                          UserData.fromJson(userSnapshot.hasData ? userSnapshot.data.data : {});
-                                      final userHasReservation = userData.reserved != null;
-                                      return RaisedButton(
-                                        onPressed: (userHasReservation && !reservedByUser) ||
-                                                station.hasVehicle ||
-                                                (station.reserved != null && !reservedByUser)
-                                            ? null
-                                            : reservedByUser
-                                                ? () => this.unReserveStation(station)
-                                                : () => this.reserveStation(station),
-                                        child: snapshot.connectionState == ConnectionState.done
-                                            ? Text(reservedByUser ? 'Cancelar Reserva' : 'Reservar')
-                                            : SizedBox(
-                                                width: 20,
-                                                height: 20,
-                                                child: CircularProgressIndicator(
-                                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                                ),
+                                return RaisedButton(
+                                  onPressed: (userHasReservation && !reservedByUser) ||
+                                          station.hasVehicle ||
+                                          (station.reserved != null && !reservedByUser)
+                                      ? null
+                                      : reservedByUser
+                                          ? () => this.unReserveStation(station)
+                                          : () => this.reserveStation(station),
+                                  child: FutureBuilder(
+                                      future: this.reserveTask,
+                                      builder: (context, snapshot) => snapshot.connectionState == ConnectionState.done
+                                          ? Text(reservedByUser ? 'Cancelar Reserva' : 'Reservar')
+                                          : SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: CircularProgressIndicator(
+                                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                               ),
-                                      );
-                                    });
+                                            )),
+                                );
                               },
                             ),
                             RaisedButton(

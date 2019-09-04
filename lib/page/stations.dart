@@ -49,9 +49,7 @@ class _StationsPageState extends State<StationsPage> {
               markers: stations.map((station) {
                 final userReserved = station.reserved != null && station.reserved.documentID == userId;
                 return Marker(
-                  icon: userReserved
-                      ? BitmapDescriptor.defaultMarkerWithHue(300)
-                      : BitmapDescriptor.defaultMarker,
+                  icon: userReserved ? BitmapDescriptor.defaultMarkerWithHue(300) : BitmapDescriptor.defaultMarker,
                   markerId: MarkerId(station.name),
                   position: station.position,
                   onTap: () => showDialog(context: context, builder: (context) => StationDialog(station)),
