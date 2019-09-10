@@ -118,7 +118,7 @@ class _StationDialogState extends State<StationDialog> {
                               child: Align(
                                 alignment: Alignment.bottomLeft,
                                 child: Text(
-                                  'Address',
+                                  'Endereço',
                                   style: Theme.of(context).textTheme.body2,
                                 ),
                               ),

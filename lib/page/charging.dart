@@ -36,9 +36,11 @@ class _ChargingPageState extends State<ChargingPage> with SingleTickerProviderSt
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'No vehicle found!',
+          'Nenhum veículo\nencontrado!',
           style: TextStyle(fontSize: 30),
+          textAlign: TextAlign.center,
         ),
+        SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.only(top: 8, bottom: 24),
           child: FadeTransition(
@@ -50,9 +52,11 @@ class _ChargingPageState extends State<ChargingPage> with SingleTickerProviderSt
             ),
           ),
         ),
+        SizedBox(height: 16),
         Text(
-          'Plug in your vehicle to start using Allset.',
+          'Plugue seu veículo para começar\na usar o Allset.',
           style: TextStyle(fontSize: 16),
+          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -99,14 +103,16 @@ class _ChargingPageState extends State<ChargingPage> with SingleTickerProviderSt
       child: FutureBuilder<FirebaseUser>(
         future: auth.currentUser(),
         builder: (context, snapshot) {
-          return !snapshot.hasData ? CircularProgressIndicator() : StreamBuilder<DocumentSnapshot>(
-            stream: db.document('/users/${snapshot.data.uid}').snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return CircularProgressIndicator();
-              final userData = UserData.fromJson(snapshot.data.data);
-              return userData.hasVehicle ? buildChargeIndicator(userData) : buildIdle();
-            },
-          );
+          return !snapshot.hasData
+              ? CircularProgressIndicator()
+              : StreamBuilder<DocumentSnapshot>(
+                  stream: db.document('/users/${snapshot.data.uid}').snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) return CircularProgressIndicator();
+                    final userData = UserData.fromJson(snapshot.data.data);
+                    return userData.hasVehicle ? buildChargeIndicator(userData) : buildIdle();
+                  },
+                );
         },
       ),
     );
