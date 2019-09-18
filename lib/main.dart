@@ -1,17 +1,25 @@
+import 'package:allset/data/app_state.dart';
 import 'package:allset/page/home.dart';
-import 'package:allset/theme.dart';
-import 'package:allset/utils/notifier.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final Firestore db = Firestore.instance;
 final FirebaseAuth auth = FirebaseAuth.instance;
 final FirebaseMessaging msg = FirebaseMessaging();
 
-final Notifier askConfirmation = Notifier();
+ThemeState appTheme;
+
+Future<ThemeState> getThemeState() async {
+  final prefs = await SharedPreferences.getInstance();
+  final darkMode = prefs.getBool('darkMode') ?? true;
+
+  return appTheme = ThemeState(initialTheme: darkMode ? ThemeMode.dark : ThemeMode.light);
+}
 
 void main() async {
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -21,35 +29,35 @@ void main() async {
     ),
   );
 
+  final askConfirmation = AskConfirmation();
+  Future ask(_) async => askConfirmation.ask();
+
   msg.requestNotificationPermissions();
-  msg.configure(
-    onMessage: (Map<String, dynamic> message) async {
-      askConfirmation.notifyListeners(); 
-    },
-    onLaunch: (Map<String, dynamic> message) async {
-      askConfirmation.notifyListeners();
-    },
-    onResume: (Map<String, dynamic> message) async {
-      askConfirmation.notifyListeners();
-    },
-  );
+  msg.configure(onMessage: ask, onLaunch: ask, onResume: ask);
 
   final authResult = await auth.signInAnonymously();
   db.document('/users/${authResult.user.uid}').setData({'token': await msg.getToken()}, merge: true);
 
-  runApp(AllsetApp(askConfirmation));
+  final List<SingleChildCloneableWidget> providers = [
+    ChangeNotifierProvider<AskConfirmation>.value(value: askConfirmation),
+    ChangeNotifierProvider<ThemeState>.value(value: await getThemeState()),
+  ];
+
+  runApp(AllsetApp(providers: providers));
 }
 
 class AllsetApp extends StatelessWidget {
-  final Notifier askConfirmation;
+  final List<SingleChildCloneableWidget> providers;
 
-  AllsetApp(this.askConfirmation);
+  AllsetApp({this.providers});
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
-        title: 'AllSet App',
-        theme: buildTheme(),
-        home: HomePage(this.askConfirmation),
-        debugShowCheckedModeBanner: false,
+  Widget build(BuildContext context) => MultiProvider(
+        providers: this.providers,
+        child: MaterialApp(
+          title: 'AllSet App',
+          home: HomePage(),
+          debugShowCheckedModeBanner: false,
+        ),
       );
 }

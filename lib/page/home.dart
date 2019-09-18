@@ -1,23 +1,23 @@
 import 'package:after_layout/after_layout.dart';
+import 'package:allset/data/app_state.dart';
 import 'package:allset/page/charging.dart';
 import 'package:allset/page/payment.dart';
 import 'package:allset/page/stations.dart';
 import 'package:allset/theme.dart';
-import 'package:allset/utils/notifier.dart';
 import 'package:allset/utils/page_item.dart';
 import 'package:allset/widget/confirm_dialog.dart';
+import 'package:allset/widget/home_drawer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 
 Firestore db = Firestore.instance;
 FirebaseAuth auth = FirebaseAuth.instance;
 
 class HomePage extends StatefulWidget {
-  final Notifier askConfirmation;
-
-  HomePage(this.askConfirmation);
+  HomePage();
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -47,7 +47,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       }
     };
 
-    widget.askConfirmation.addListener(listenToConfirmation);
+    Provider.of<AskConfirmation>(context).addListener(listenToConfirmation);
   }
 
   @override
@@ -62,7 +62,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   @override
   void dispose() {
-    widget.askConfirmation.removeListener(this.listenToConfirmation);
+    Provider.of<AskConfirmation>(context).removeListener(this.listenToConfirmation);
     tabController.dispose();
     super.dispose();
   }
@@ -89,12 +89,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         children: [
           Scaffold(
             appBar: AppBar(
-              elevation: 0,
               centerTitle: true,
               title: Text(
                 'AllSet',
               ),
             ),
+            drawer: HomeDrawer(),
             body: TabBarView(
               controller: tabController,
               children: pages.map((page) => page.page).toList(),
