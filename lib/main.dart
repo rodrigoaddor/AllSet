@@ -18,7 +18,7 @@ Future<ThemeState> getThemeState() async {
   final prefs = await SharedPreferences.getInstance();
   final darkMode = prefs.getBool('darkMode') ?? true;
 
-  return appTheme = ThemeState(initialTheme: darkMode ? ThemeMode.dark : ThemeMode.light);
+  return appTheme = ThemeState(themeMode: darkMode ? ThemeMode.dark : ThemeMode.light);
 }
 
 void main() async {
@@ -54,10 +54,15 @@ class AllsetApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MultiProvider(
         providers: this.providers,
-        child: MaterialApp(
-          title: 'AllSet App',
-          home: HomePage(),
-          debugShowCheckedModeBanner: false,
+        child: Builder(
+          builder: (context) => MaterialApp(
+            title: 'AllSet App',
+            home: HomePage(),
+            theme: ThemeData.light(),
+            darkTheme: ThemeData.dark(),
+            themeMode: Provider.of<ThemeState>(context).themeMode,
+            debugShowCheckedModeBanner: false,
+          ),
         ),
       );
 }

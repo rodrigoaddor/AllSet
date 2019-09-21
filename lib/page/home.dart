@@ -3,7 +3,6 @@ import 'package:allset/data/app_state.dart';
 import 'package:allset/page/charging.dart';
 import 'package:allset/page/payment.dart';
 import 'package:allset/page/stations.dart';
-import 'package:allset/theme.dart';
 import 'package:allset/utils/page_item.dart';
 import 'package:allset/widget/confirm_dialog.dart';
 import 'package:allset/widget/home_drawer.dart';
@@ -30,6 +29,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   @override
   void afterFirstLayout(BuildContext context) {
+    print(Theme.of(context).brightness);
+
     listenToConfirmation = () async {
       final confirm = await showDialog<bool>(
         context: context,
@@ -83,37 +84,34 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      data: buildHomeTheme(),
-      child: Stack(
-        children: [
-          Scaffold(
-            appBar: AppBar(
-              centerTitle: true,
-              title: Text(
-                'AllSet',
-              ),
-            ),
-            drawer: HomeDrawer(),
-            body: TabBarView(
-              controller: tabController,
-              children: pages.map((page) => page.page).toList(),
-              physics: NeverScrollableScrollPhysics(),
-            ),
-            bottomNavigationBar: BottomNavigationBar(
-              currentIndex: this.currentIndex,
-              items: this.pages.map((item) => item.navItem).toList(),
-              type: BottomNavigationBarType.fixed,
-              onTap: (index) {
-                tabController.animateTo(index);
-                setState(() {
-                  this.currentIndex = index;
-                });
-              },
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(
+            centerTitle: true,
+            title: Text(
+              'AllSet',
             ),
           ),
-        ],
-      ),
+          drawer: HomeDrawer(),
+          body: TabBarView(
+            controller: tabController,
+            children: pages.map((page) => page.page).toList(),
+            physics: NeverScrollableScrollPhysics(),
+          ),
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: this.currentIndex,
+            items: this.pages.map((item) => item.navItem).toList(),
+            type: BottomNavigationBarType.fixed,
+            onTap: (index) {
+              tabController.animateTo(index);
+              setState(() {
+                this.currentIndex = index;
+              });
+            },
+          ),
+        ),
+      ],
     );
   }
 }
