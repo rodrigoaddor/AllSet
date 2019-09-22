@@ -35,8 +35,14 @@ void main() async {
   msg.requestNotificationPermissions();
   msg.configure(onMessage: ask, onLaunch: ask, onResume: ask);
 
-  final authResult = await auth.signInAnonymously();
-  db.document('/users/${authResult.user.uid}').setData({'token': await msg.getToken()}, merge: true);
+  try {
+  if (await auth.currentUser() == null) {
+    final authResult = await auth.signInAnonymously();
+    db.document('/users/${authResult.user.uid}').setData({'token': await msg.getToken()}, merge: true);
+  }
+  } catch (e) {
+
+  }
 
   final List<SingleChildCloneableWidget> providers = [
     ChangeNotifierProvider<AskConfirmation>.value(value: askConfirmation),

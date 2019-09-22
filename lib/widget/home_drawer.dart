@@ -1,5 +1,6 @@
 import 'package:allset/data/app_state.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 class HomeDrawer extends StatelessWidget {
@@ -11,9 +12,6 @@ class HomeDrawer extends StatelessWidget {
       child: ListView(
         children: [
           DrawerHeader(
-            decoration: BoxDecoration(
-              color: Colors.black.withAlpha(190),
-            ),
             child: FittedBox(
               fit: BoxFit.fitWidth,
               child: Padding(
@@ -29,6 +27,7 @@ class HomeDrawer extends StatelessWidget {
           ),
           SwitchListTile(
             title: Text('Tema Escuro'),
+            secondary: Icon(FontAwesomeIcons.adjust),
             value: themeState.themeMode == ThemeMode.dark,
             onChanged: (enabled) => {themeState.themeMode = enabled ? ThemeMode.dark : ThemeMode.light},
           )
