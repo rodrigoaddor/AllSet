@@ -36,13 +36,12 @@ void main() async {
   msg.configure(onMessage: ask, onLaunch: ask, onResume: ask);
 
   try {
-  if (await auth.currentUser() == null) {
-    final authResult = await auth.signInAnonymously();
-    db.document('/users/${authResult.user.uid}').setData({'token': await msg.getToken()}, merge: true);
-  }
-  } catch (e) {
-
-  }
+    final currentUser = await auth.currentUser();
+    final userID = currentUser != null
+        ? currentUser.uid
+        : await auth.signInAnonymously().then((authResult) => authResult.user.uid);
+    db.document('/users/$userID').setData({'token': await msg.getToken()}, merge: true);
+  } catch (e) {}
 
   final List<SingleChildCloneableWidget> providers = [
     ChangeNotifierProvider<AskConfirmation>.value(value: askConfirmation),
