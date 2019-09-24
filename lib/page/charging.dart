@@ -21,7 +21,7 @@ class _ChargingPageState extends State<ChargingPage> with SingleTickerProviderSt
   void initState() {
     super.initState();
     fadeController = AnimationController(vsync: this, duration: Duration(seconds: 3));
-    fadeAnimation = Tween(begin: 0.2, end: 0.7).chain(CurveTween(curve: Curves.easeInOut)).animate(fadeController);
+    fadeAnimation = Tween(begin: 0.4, end: 0.7).chain(CurveTween(curve: Curves.easeInOut)).animate(fadeController);
     fadeController.repeat(reverse: true);
   }
 
@@ -48,7 +48,7 @@ class _ChargingPageState extends State<ChargingPage> with SingleTickerProviderSt
             child: Icon(
               FontAwesomeIcons.chargingStation,
               size: 150,
-              color: Colors.grey[800],
+              color: Theme.of(context).brightness == Brightness.light ? Colors.grey[800] : Colors.red[500],
             ),
           ),
         ),

@@ -17,8 +17,10 @@ class HomeDrawer extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'AllSet',
+                  'ALLSET',
                   style: TextStyle(
+                    fontFamily: 'Tesla',
+                    fontSize: 32,
                     color: Colors.red,
                   ),
                 ),

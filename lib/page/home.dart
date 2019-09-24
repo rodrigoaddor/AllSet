@@ -52,7 +52,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     };
 
     Provider.of<AskConfirmation>(context).addListener(listenToConfirmation);
-    
+
     connectivitySubscription = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
       setState(() {
         hasConnectivity = result != ConnectivityResult.none;
@@ -99,8 +99,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         Scaffold(
           appBar: AppBar(
             centerTitle: true,
-            title: Text(
-              'AllSet',
+            title: Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                'ALLSET',
+                style: TextStyle(
+                  fontFamily: 'Tesla',
+                ),
+              ),
             ),
           ),
           drawer: HomeDrawer(),
@@ -152,7 +158,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: this.currentIndex,
             items: this.pages.map((item) => item.navItem).toList(),
-            type: BottomNavigationBarType.fixed,
+            backgroundColor: Theme.of(context).appBarTheme.color,
+            selectedItemColor: Colors.white,
+            unselectedItemColor: Colors.black,
             onTap: (index) {
               tabController.animateTo(index);
               setState(() {

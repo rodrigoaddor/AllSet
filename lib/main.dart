@@ -1,5 +1,6 @@
 import 'package:allset/data/app_state.dart';
 import 'package:allset/page/home.dart';
+import 'package:allset/theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -63,8 +64,8 @@ class AllsetApp extends StatelessWidget {
           builder: (context) => MaterialApp(
             title: 'AllSet App',
             home: HomePage(),
-            theme: ThemeData.light(),
-            darkTheme: ThemeData.dark(),
+            theme: buildLightTheme(),
+            darkTheme: buildDarkTheme(),
             themeMode: Provider.of<ThemeState>(context).themeMode,
             debugShowCheckedModeBanner: false,
           ),
