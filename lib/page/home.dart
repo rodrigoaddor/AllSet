@@ -11,6 +11,7 @@ import 'package:allset/widget/home_drawer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:connectivity/connectivity.dart';
@@ -81,7 +82,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   final pages = <PageItem>[
     PageItem(
       name: 'Estações',
-      icon: FontAwesomeIcons.chargingStation,
+      icon: FontAwesomeIcons.mapMarkedAlt,
       page: StationsPage(),
     ),
     PageItem(
@@ -94,6 +95,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Stack(
       children: [
         Scaffold(
@@ -155,18 +158,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ),
             ),
           ),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: this.currentIndex,
-            items: this.pages.map((item) => item.navItem).toList(),
-            backgroundColor: Theme.of(context).appBarTheme.color,
-            selectedItemColor: Colors.white,
-            unselectedItemColor: Colors.black,
-            onTap: (index) {
-              tabController.animateTo(index);
-              setState(() {
-                this.currentIndex = index;
-              });
-            },
+          bottomNavigationBar: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle(statusBarColor: Theme.of(context).appBarTheme.color),
+            child: BottomNavigationBar(
+              currentIndex: this.currentIndex,
+              items: this.pages.map((item) => item.navItem).toList(),
+              backgroundColor: Theme.of(context).appBarTheme.color,
+              selectedItemColor: theme.brightness == Brightness.light ? Colors.white : Colors.red[500],
+              onTap: (index) {
+                tabController.animateTo(index);
+                setState(() {
+                  this.currentIndex = index;
+                });
+              },
+            ),
           ),
         ),
       ],

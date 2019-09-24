@@ -48,7 +48,7 @@ class _ChargingPageState extends State<ChargingPage> with SingleTickerProviderSt
             child: Icon(
               FontAwesomeIcons.chargingStation,
               size: 150,
-              color: Theme.of(context).brightness == Brightness.light ? Colors.grey[800] : Colors.red[500],
+              color: Colors.red[500],
             ),
           ),
         ),
