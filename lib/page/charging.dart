@@ -1,7 +1,10 @@
+import 'package:flutter/material.dart';
+
 import 'package:allset/data/user_data.dart';
+import 'package:allset/page/base_page.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
@@ -99,7 +102,8 @@ class _ChargingPageState extends State<ChargingPage> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return BasePage(
+      route: '/',
       child: FutureBuilder<FirebaseUser>(
         future: auth.currentUser(),
         builder: (context, snapshot) {

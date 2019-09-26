@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:after_layout/after_layout.dart';
 import 'package:allset/data/app_state.dart';
 import 'package:allset/data/station_data.dart';
+import 'package:allset/page/base_page.dart';
 import 'package:allset/widget/station_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -60,44 +61,47 @@ class _StationsPageState extends State<StationsPage> with AfterLayoutMixin {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<FirebaseUser>(
-      future: auth.currentUser(),
-      builder: (context, snapshot) {
-        final userId = snapshot.hasData ? snapshot.data.uid : '';
-        return StreamBuilder<QuerySnapshot>(
-          stream: db.collection('/stations').snapshots(),
-          builder: (context, snapshot) {
-            final List<StationData> stations = !snapshot.hasData
-                ? []
-                : snapshot.data.documents.map((doc) {
-                    doc.data['id'] = doc.documentID;
-                    return StationData.fromJSON(doc.data);
-                  }).toList(growable: false);
+    return BasePage(
+      route: '/stations',
+      child: FutureBuilder<FirebaseUser>(
+        future: auth.currentUser(),
+        builder: (context, snapshot) {
+          final userId = snapshot.hasData ? snapshot.data.uid : '';
+          return StreamBuilder<QuerySnapshot>(
+            stream: db.collection('/stations').snapshots(),
+            builder: (context, snapshot) {
+              final List<StationData> stations = !snapshot.hasData
+                  ? []
+                  : snapshot.data.documents.map((doc) {
+                      doc.data['id'] = doc.documentID;
+                      return StationData.fromJSON(doc.data);
+                    }).toList(growable: false);
 
-            return GoogleMap(
-              myLocationEnabled: true,
-              mapToolbarEnabled: false,
-              onMapCreated: (controller) => mapCompleter.complete(controller),
-              onLongPress: (latLng) => print(latLng),
-              markers: stations.map((station) {
-                final userReserved = station.reserved != null && station.reserved.documentID == userId;
-                return Marker(
-                  icon: userReserved ? BitmapDescriptor.defaultMarkerWithHue(300) : BitmapDescriptor.defaultMarker,
-                  markerId: MarkerId(station.name),
-                  position: station.position,
-                  onTap: () => showDialog(context: context, builder: (context) => StationDialog(station)),
-                  alpha: station.reserved == null || userReserved ? 1 : 0.5,
-                  consumeTapEvents: true,
-                );
-              }).toSet(),
-              initialCameraPosition: CameraPosition(
-                target: LatLng(-22.2563022, -45.7034431),
-                zoom: 14.4746,
-              ),
-            );
-          },
-        );
-      },
+              return GoogleMap(
+                myLocationEnabled: true,
+                mapToolbarEnabled: false,
+                onMapCreated: (controller) => mapCompleter.complete(controller),
+                onLongPress: (latLng) => print(latLng),
+                markers: stations.map((station) {
+                  final userReserved = station.reserved != null && station.reserved.documentID == userId;
+                  return Marker(
+                    icon: userReserved ? BitmapDescriptor.defaultMarkerWithHue(300) : BitmapDescriptor.defaultMarker,
+                    markerId: MarkerId(station.name),
+                    position: station.position,
+                    alpha: station.reserved == null || userReserved ? 1 : 0.5,
+                    consumeTapEvents: true,
+                    onTap: () => showDialog(context: context, builder: (context) => StationDialog(station)),
+                  );
+                }).toSet(),
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(-22.2563022, -45.7034431),
+                  zoom: 14.4746,
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

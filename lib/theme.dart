@@ -5,6 +5,9 @@ ThemeData buildLightTheme() => ThemeData(
       fontFamily: 'OpenSans',
       primaryColor: Colors.red,
       appBarTheme: AppBarTheme(color: Colors.red[700]),
+      //pageTransitionsTheme: PageTransitionsTheme(builders: {
+      //  TargetPlatform.android: OpenUpwardsPageTransitionsBuilder(),
+      //}),
     );
 
 ThemeData buildDarkTheme() => ThemeData(
@@ -19,4 +22,7 @@ ThemeData buildDarkTheme() => ThemeData(
       dividerColor: Colors.red,
       cursorColor: Colors.red,
       textSelectionHandleColor: Colors.red,
+      pageTransitionsTheme: PageTransitionsTheme(builders: {
+        TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+      }),
     );

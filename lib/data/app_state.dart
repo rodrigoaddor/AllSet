@@ -17,11 +17,3 @@ class ThemeState with ChangeNotifier {
     });
   }
 }
-
-class AskConfirmation with ChangeNotifier {
-  AskConfirmation();
-
-  void ask() {
-    notifyListeners();
-  }
-}

@@ -1,10 +1,15 @@
-import 'package:allset/data/app_state.dart';
-import 'package:allset/page/home.dart';
-import 'package:allset/theme.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'package:allset/data/app_notifier.dart';
+import 'package:allset/data/app_state.dart';
+import 'package:allset/theme.dart';
+import 'package:allset/router.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,11 +35,14 @@ void main() async {
     ),
   );
 
-  final askConfirmation = AskConfirmation();
-  Future ask(_) async => askConfirmation.ask();
+  final appNotifier = AppNotifier();
+  Future<void> processNotification(Map<String, dynamic> notification) async {
+    print(notification);
+    appNotifier.notification = AppNotification.START_CHARGE;
+  }
 
   msg.requestNotificationPermissions();
-  msg.configure(onMessage: ask, onLaunch: ask, onResume: ask);
+  msg.configure(onMessage: processNotification, onLaunch: processNotification, onResume: processNotification);
 
   try {
     final currentUser = await auth.currentUser();
@@ -45,7 +53,7 @@ void main() async {
   } catch (e) {}
 
   final List<SingleChildCloneableWidget> providers = [
-    ChangeNotifierProvider<AskConfirmation>.value(value: askConfirmation),
+    ChangeNotifierProvider<AppNotifier>.value(value: appNotifier),
     ChangeNotifierProvider<ThemeState>.value(value: await getThemeState()),
   ];
 
@@ -63,7 +71,7 @@ class AllsetApp extends StatelessWidget {
         child: Builder(
           builder: (context) => MaterialApp(
             title: 'AllSet App',
-            home: HomePage(),
+            routes: router,
             theme: buildLightTheme(),
             darkTheme: buildDarkTheme(),
             themeMode: Provider.of<ThemeState>(context).themeMode,
