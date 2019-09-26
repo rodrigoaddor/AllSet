@@ -1,12 +1,12 @@
 import 'dart:async';
 
+import 'package:allset/page/base_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:allset/data/app_notifier.dart';
 import 'package:allset/data/app_state.dart';
 import 'package:allset/theme.dart';
-import 'package:allset/router.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -71,7 +71,7 @@ class AllsetApp extends StatelessWidget {
         child: Builder(
           builder: (context) => MaterialApp(
             title: 'AllSet App',
-            routes: router,
+            home: BasePage(),
             theme: buildLightTheme(),
             darkTheme: buildDarkTheme(),
             themeMode: Provider.of<ThemeState>(context).themeMode,

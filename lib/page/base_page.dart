@@ -1,3 +1,5 @@
+import 'package:allset/page/charging.dart';
+import 'package:allset/page/stations.dart';
 import 'package:flutter/material.dart';
 
 import 'package:allset/widget/app_drawer.dart';
@@ -6,20 +8,16 @@ import 'package:allset/data/app_notifier.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:provider/provider.dart';
 
+enum AppPage { CHARGING, STATIONS }
+
 class BasePage extends StatefulWidget {
-  final Widget child;
-  final String route;
-
-  BasePage({
-    @required this.child,
-    this.route,
-  });
-
   @override
   _BasePageState createState() => _BasePageState();
 }
 
-class _BasePageState extends State<BasePage> with AfterLayoutMixin {
+class _BasePageState extends State<BasePage> with SingleTickerProviderStateMixin, AfterLayoutMixin {
+  TabController tabController;
+  AppPage currentPage = AppPage.CHARGING;
   Function removeListener;
 
   @override
@@ -32,6 +30,16 @@ class _BasePageState extends State<BasePage> with AfterLayoutMixin {
 
     appNotifier.addListener(listenForNotification);
     removeListener = () => appNotifier.removeListener(listenForNotification);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    tabController = TabController(
+      initialIndex: this.currentPage.index,
+      length: AppPage.values.length,
+      vsync: this,
+    );
   }
 
   @override
@@ -56,9 +64,19 @@ class _BasePageState extends State<BasePage> with AfterLayoutMixin {
         ),
       ),
       drawer: AppDrawer(
-        currentRoute: widget.route,
+          currentPage: this.currentPage,
+          changePage: (appPage) {
+            tabController.animateTo(appPage.index);
+            setState(() => currentPage = appPage);
+          }),
+      body: TabBarView(
+        controller: tabController,
+        physics: NeverScrollableScrollPhysics(),
+        children: [
+          ChargingPage(),
+          StationsPage(),
+        ],
       ),
-      body: Center(child: widget.child),
     );
   }
 }

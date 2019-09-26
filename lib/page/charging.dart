@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:allset/data/user_data.dart';
-import 'package:allset/page/base_page.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -102,23 +101,20 @@ class _ChargingPageState extends State<ChargingPage> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    return BasePage(
-      route: '/',
-      child: FutureBuilder<FirebaseUser>(
-        future: auth.currentUser(),
-        builder: (context, snapshot) {
-          return !snapshot.hasData
-              ? CircularProgressIndicator()
-              : StreamBuilder<DocumentSnapshot>(
-                  stream: db.document('/users/${snapshot.data.uid}').snapshots(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) return CircularProgressIndicator();
-                    final userData = UserData.fromJson(snapshot.data.data);
-                    return userData.hasVehicle ? buildChargeIndicator(userData) : buildIdle();
-                  },
-                );
-        },
-      ),
+    return FutureBuilder<FirebaseUser>(
+      future: auth.currentUser(),
+      builder: (context, snapshot) {
+        return !snapshot.hasData
+            ? CircularProgressIndicator()
+            : StreamBuilder<DocumentSnapshot>(
+                stream: db.document('/users/${snapshot.data.uid}').snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) return CircularProgressIndicator();
+                  final userData = UserData.fromJson(snapshot.data.data);
+                  return userData.hasVehicle ? buildChargeIndicator(userData) : buildIdle();
+                },
+              );
+      },
     );
   }
 }

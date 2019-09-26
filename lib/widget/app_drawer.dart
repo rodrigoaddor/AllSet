@@ -1,15 +1,32 @@
 import 'package:allset/data/app_state.dart';
+import 'package:allset/page/base_page.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 class AppDrawer extends StatelessWidget {
-  final String currentRoute;
+  final AppPage currentPage;
+  final Function(AppPage) changePage;
 
-  AppDrawer({this.currentRoute});
+  AppDrawer({
+    @required this.currentPage,
+    @required this.changePage,
+  });
 
   @override
   Widget build(BuildContext context) {
+    Widget generateDrawerTile(String title, IconData icon, AppPage page) {
+      return ListTile(
+        title: Text(title),
+        leading: Icon(icon),
+        selected: currentPage == page,
+        onTap: () {
+          Navigator.pop(context);
+          this.changePage(page);
+        },
+      );
+    }
+
     final themeState = Provider.of<ThemeState>(context);
 
     return Drawer(
@@ -31,24 +48,8 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
           ),
-          ListTile(
-            title: const Text('Carregamento'),
-            leading: const Icon(FontAwesomeIcons.bolt),
-            selected: currentRoute == '/',
-            onTap: () {
-              Navigator.pop(context);
-              if (currentRoute != '/') Navigator.pushReplacementNamed(context, '/');
-            },
-          ),
-          ListTile(
-            title: const Text('Mapa de Estações'),
-            leading: const Icon(FontAwesomeIcons.mapMarkedAlt),
-            selected: currentRoute == '/stations',
-            onTap: () {
-              Navigator.pop(context);
-              if (currentRoute != '/stations') Navigator.pushReplacementNamed(context, '/stations');
-            },
-          ),
+          generateDrawerTile('Carregamento', FontAwesomeIcons.bolt, AppPage.CHARGING),
+          generateDrawerTile('Mapa de Estações', FontAwesomeIcons.mapMarkedAlt, AppPage.STATIONS),
           Divider(),
           ListTile(
             title: const Text('Pagamento'),
