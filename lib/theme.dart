@@ -4,10 +4,13 @@ ThemeData buildLightTheme() => ThemeData(
       brightness: Brightness.light,
       fontFamily: 'OpenSans',
       primaryColor: Colors.red,
+      accentColor: Colors.white,
+      accentColorBrightness: Brightness.light,
       appBarTheme: AppBarTheme(color: Colors.red[700]),
-      //pageTransitionsTheme: PageTransitionsTheme(builders: {
-      //  TargetPlatform.android: OpenUpwardsPageTransitionsBuilder(),
-      //}),
+      buttonTheme: ButtonThemeData(
+        buttonColor: Colors.red[500],
+        textTheme: ButtonTextTheme.accent
+      ),
     );
 
 ThemeData buildDarkTheme() => ThemeData(
@@ -22,7 +25,4 @@ ThemeData buildDarkTheme() => ThemeData(
       dividerColor: Colors.red,
       cursorColor: Colors.red,
       textSelectionHandleColor: Colors.red,
-      pageTransitionsTheme: PageTransitionsTheme(builders: {
-        TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-      }),
     );

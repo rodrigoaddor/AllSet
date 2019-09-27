@@ -17,3 +17,16 @@ class ThemeState with ChangeNotifier {
     });
   }
 }
+
+class UserState with ChangeNotifier {
+  UserState({String userID}) {
+    _userID = userID;
+  }
+
+  String _userID;
+  String get userID => _userID ?? '';
+  set userID(String id) {
+    _userID = id;
+    notifyListeners();
+  }
+}

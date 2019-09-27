@@ -1,10 +1,10 @@
 import 'dart:async';
 
+import 'package:allset/widget/station_sheet.dart';
 import 'package:flutter/material.dart';
 
 import 'package:allset/data/app_state.dart';
 import 'package:allset/data/station_data.dart';
-import 'package:allset/widget/station_dialog.dart';
 import 'package:flutter/services.dart';
 
 import 'package:provider/provider.dart';
@@ -94,7 +94,7 @@ class _StationsPageState extends State<StationsPage> with AfterLayoutMixin {
                   position: station.position,
                   alpha: station.reserved == null || userReserved ? 1 : 0.5,
                   consumeTapEvents: true,
-                  onTap: () => showDialog(context: context, builder: (context) => StationDialog(station)),
+                  onTap: () => Scaffold.of(context).showBottomSheet((context) => StationSheet(station), elevation: 12),
                 );
               }).toSet(),
               initialCameraPosition: CameraPosition(
