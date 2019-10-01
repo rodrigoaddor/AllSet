@@ -31,6 +31,7 @@ class StationsPage extends StatefulWidget {
 class _StationsPageState extends State<StationsPage> with AfterLayoutMixin {
   Completer<GoogleMapController> mapCompleter = Completer();
   Function disposeThemeListener;
+  PersistentBottomSheetController sheetController;
 
   @override
   void initState() {
@@ -41,6 +42,10 @@ class _StationsPageState extends State<StationsPage> with AfterLayoutMixin {
   @override
   void dispose() {
     if (disposeThemeListener != null) disposeThemeListener();
+    Future.value().then((_) {
+      if (sheetController != null) sheetController.close();
+    });
+
     super.dispose();
   }
 
@@ -50,7 +55,7 @@ class _StationsPageState extends State<StationsPage> with AfterLayoutMixin {
       final themeState = Provider.of<ThemeState>(context);
       void setMapStyle() {
         try {
-        controller.setMapStyle(themeState.themeMode == ThemeMode.light ? lightMap : darkMap);
+          controller.setMapStyle(themeState.themeMode == ThemeMode.light ? lightMap : darkMap);
         } on MissingPluginException {
           print('Tried to update style unmounted');
         }
@@ -94,7 +99,10 @@ class _StationsPageState extends State<StationsPage> with AfterLayoutMixin {
                   position: station.position,
                   alpha: station.reserved == null || userReserved ? 1 : 0.5,
                   consumeTapEvents: true,
-                  onTap: () => Scaffold.of(context).showBottomSheet((context) => StationSheet(station), elevation: 12),
+                  onTap: () async {
+                    sheetController =
+                        Scaffold.of(context).showBottomSheet((context) => StationSheet(station), elevation: 12);
+                  },
                 );
               }).toSet(),
               initialCameraPosition: CameraPosition(

@@ -74,7 +74,7 @@ class _StationSheetState extends State<StationSheet> with AfterLayoutMixin, Tick
       await stationRef.updateData({'reserved': userRef});
     }
 
-    reserving.complete();
+    setState(() => reserving.complete());
   }
 
   @override
@@ -152,7 +152,8 @@ class _StationSheetState extends State<StationSheet> with AfterLayoutMixin, Tick
                       },
                     ),
                   ),
-                  onPressed: userReserve == null && stationReserve == null || stationReserve == userID
+                  onPressed: ((userReserve == null && stationReserve == null) || stationReserve == userID) &&
+                          (reserving == null || reserving.isCompleted)
                       ? () => handleReservation(context)
                       : null,
                 ),
