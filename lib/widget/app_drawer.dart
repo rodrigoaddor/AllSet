@@ -1,6 +1,9 @@
+import 'package:flutter/material.dart';
+
 import 'package:allset/data/app_state.dart';
 import 'package:allset/page/base_page.dart';
-import 'package:flutter/material.dart';
+import 'package:allset/widget/payment_dialog.dart';
+
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -54,6 +57,9 @@ class AppDrawer extends StatelessWidget {
           ListTile(
             title: const Text('Pagamento'),
             leading: const Icon(FontAwesomeIcons.dollarSign),
+            onTap: () {
+              showDialog(context: context, builder: (context) => PaymentDialog());
+            },
           ),
           SwitchListTile(
             title: const Text('Tema Escuro'),

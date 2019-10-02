@@ -4,13 +4,9 @@ ThemeData buildLightTheme() => ThemeData(
       brightness: Brightness.light,
       fontFamily: 'OpenSans',
       primaryColor: Colors.red,
-      accentColor: Colors.white,
-      accentColorBrightness: Brightness.light,
+      accentColor: Colors.red[700],
       appBarTheme: AppBarTheme(color: Colors.red[700]),
-      buttonTheme: ButtonThemeData(
-        buttonColor: Colors.red[500],
-        textTheme: ButtonTextTheme.accent
-      ),
+       
     );
 
 ThemeData buildDarkTheme() => ThemeData(
@@ -18,8 +14,7 @@ ThemeData buildDarkTheme() => ThemeData(
       fontFamily: 'OpenSans',
       primaryColor: Colors.red,
       appBarTheme: AppBarTheme(color: Colors.black),
-      buttonColor: Colors.red[800],
-      accentColor: Colors.red[800],
+      accentColor: Colors.white,
       indicatorColor: Colors.red,
       toggleableActiveColor: Colors.red,
       dividerColor: Colors.red,
