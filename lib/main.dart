@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 
 import 'package:allset/data/app_notifier.dart';
 import 'package:allset/data/app_state.dart';
-import 'package:allset/theme.dart'; 
+import 'package:allset/theme.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -43,7 +43,12 @@ void main() async {
   }
 
   msg.requestNotificationPermissions();
-  msg.configure(onMessage: processNotification, onLaunch: processNotification, onResume: processNotification);
+  msg.configure(
+    onMessage: processNotification,
+    onLaunch: processNotification,
+    onResume: processNotification,
+    onBackgroundMessage: processNotification,
+  );
 
   userState = UserState();
   auth.onAuthStateChanged.listen((user) => userState.userID = user.uid);
@@ -56,7 +61,6 @@ void main() async {
     db.document('/users/$userID').setData({'token': await msg.getToken()}, merge: true);
     userState.userID = userID;
   } catch (e) {}
-
 
   final List<SingleChildCloneableWidget> providers = [
     ChangeNotifierProvider<AppNotifier>.value(value: appNotifier),

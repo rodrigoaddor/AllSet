@@ -1,3 +1,4 @@
+import 'package:allset/data/payment_data.dart';
 import 'package:flutter/material.dart';
 
 import 'package:allset/data/user_data.dart';
@@ -65,6 +66,8 @@ class _ChargingPageState extends State<ChargingPage> with SingleTickerProviderSt
   }
 
   Widget buildChargeIndicator(UserData userData) {
+    final chargeDone = userData.payment.type == PaymentType.CHARGE && userData.payment.value > userData.percent * 100;
+
     return CircularPercentIndicator(
       percent: userData.percent,
       progressColor: Colors.red[400],
@@ -78,7 +81,7 @@ class _ChargingPageState extends State<ChargingPage> with SingleTickerProviderSt
       center: Stack(
         alignment: Alignment.center,
         children: [
-          if (userData.charging) ...[
+          if (userData.charging && (userData.payment.type != PaymentType.CHARGE || chargeDone)) ...[
             Padding(
               padding: EdgeInsets.only(top: 8, left: 10),
               child: Icon(
