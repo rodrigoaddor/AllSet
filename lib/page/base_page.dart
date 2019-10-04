@@ -28,6 +28,8 @@ class _BasePageState extends State<BasePage> with SingleTickerProviderStateMixin
       if (appNotifier.handler != null) appNotifier.handler(context);
     }
 
+    if (appNotifier.handler != null) appNotifier.handler(context);
+
     appNotifier.addListener(listenForNotification);
     removeListener = () => appNotifier.removeListener(listenForNotification);
   }
