@@ -1,3 +1,4 @@
+import 'package:allset/widget/plate_dialog.dart';
 import 'package:flutter/material.dart';
 
 import 'package:allset/data/app_state.dart';
@@ -59,6 +60,13 @@ class AppDrawer extends StatelessWidget {
             leading: const Icon(FontAwesomeIcons.dollarSign),
             onTap: () {
               showDialog(context: context, builder: (context) => PaymentDialog());
+            },
+          ),
+          ListTile(
+            title: const Text('Placa'),
+              leading: Icon(FontAwesomeIcons.car),
+            onTap: () {
+              showDialog(context: context, builder: (context) => PlateDialog());
             },
           ),
           SwitchListTile(

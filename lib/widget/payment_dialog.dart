@@ -164,19 +164,19 @@ class _PaymentDialogState extends State<PaymentDialog> with TickerProviderStateM
           child: Text('Cancelar'),
           onPressed: () => Navigator.pop(context),
         ),
-        RaisedButton(
-          child: (loading == null || loading.isCompleted)
-              ? Text('Salvar')
-              : SizedBox.fromSize(
-                  size: Size.square(20),
-                  child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(Colors.white)),
-                ),
-          color: Colors.red[700],
-          textColor: Colors.white,
-          onPressed: (loading == null || loading.isCompleted) && inputValidator(paymentController.text) == null
-              ? () => savePayment(context)
-              : null,
-        ),
+            RaisedButton(
+              child: (loading == null || loading.isCompleted)
+                  ? Text('Salvar')
+                  : SizedBox.fromSize(
+                      size: Size.square(20),
+                      child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(Colors.white)),
+                    ),
+              color: Colors.red[700],
+              textColor: Colors.white,
+              onPressed: (loading == null || loading.isCompleted) && inputValidator(paymentController.text) == null
+                  ? () => savePayment(context)
+                  : null,
+            ),
       ],
     );
   }
