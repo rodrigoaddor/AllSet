@@ -47,7 +47,6 @@ void main() async {
     onMessage: processNotification,
     onLaunch: processNotification,
     onResume: processNotification,
-    onBackgroundMessage: processNotification,
   );
 
   userState = UserState();
